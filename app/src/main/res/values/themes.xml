@@ -16,13 +16,14 @@
         <item name="android:colorForeground">@color/white</item>
         <item name="android:textColorPrimary">@color/white</item>
         <item name="buttonWelcome">@style/Widget.Theme.LoftCoin.Button.Welcome</item>
+        <!--Redefine attributes *HeadlineX -->
         <item name="textAppearanceHeadline1">@style/TextAppearance.Theme.LoftCoin.H1</item>
         <item name="textAppearanceHeadline2">@style/TextAppearance.Theme.LoftCoin.H2</item>
         <item name="textAppearanceHeadline3">@style/TextAppearance.Theme.LoftCoin.H3</item>
         <item name="textAppearanceHeadline4">@style/TextAppearance.Theme.LoftCoin.H4</item>
     </style>
 
-    <!-- Button "Welcome" theme. -->
+    <!-- Create button "Welcome" theme, name=Widget.Theme.LoftCoin.Button.Welcome. -->
     <style name="Widget.Theme.LoftCoin.Button.Welcome" parent="Widget.MaterialComponents.TextView">
         <item name="android:background">@drawable/btn_welcome</item>
         <item name="android:clickable">true</item>
@@ -33,6 +34,7 @@
         <item name="android:textAppearance">?attr/textAppearanceButton</item>
     </style>
 
+    <!--Create Headers themes, inherited from TextAppearance.MaterialComponents.Body1-->
     <style name="TextAppearance.Theme.LoftCoin" parent="TextAppearance.MaterialComponents.Body1" />
 
     <style name="TextAppearance.Theme.LoftCoin.H1">
@@ -51,5 +53,6 @@
         <item name="android:textSize">14sp</item>
     </style>
 
+    <!--create custom attribute-->
     <attr name="buttonWelcome" format="reference" />
 </resources>
