@@ -11,6 +11,7 @@ import com.akchimwf.loftcoin.databinding.WelcomePageBinding;
 
 public class WelcomeAdapter extends RecyclerView.Adapter<WelcomeAdapter.ViewHolder> {
 
+    /*store resources for WelcomeActivities screens in int[]*/
     private static final int[] IMAGES = {
             R.drawable.welcome_page_1,
             R.drawable.welcome_page_2,
@@ -34,11 +35,13 @@ public class WelcomeAdapter extends RecyclerView.Adapter<WelcomeAdapter.ViewHold
     @NonNull
     @Override
     public WelcomeAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        /*WelcomePageBinding class comes from 'viewBinding' at build.grade*/
         return new ViewHolder(WelcomePageBinding.inflate(inflater, parent, false));
     }
 
     @Override
     public void onBindViewHolder(@NonNull WelcomeAdapter.ViewHolder holder, int position) {
+        /*binding resources to current screen of WelcomeAdapter*/
         holder.binding.image.setImageResource(IMAGES[position]);
         holder.binding.subtitle.setText(TITLES[position]);
         holder.binding.subtitle.setText(SUBTITLES[position]);
@@ -52,13 +55,16 @@ public class WelcomeAdapter extends RecyclerView.Adapter<WelcomeAdapter.ViewHold
     @Override
     public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
         super.onAttachedToRecyclerView(recyclerView);
+        /*create inflater once adapter attached to RecycleView, not every time onCreateViewHolder*/
         inflater = LayoutInflater.from(recyclerView.getContext());
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        /*store WelcomePageBinding instance in ViewHolder*/
         final WelcomePageBinding binding;
 
         public ViewHolder(@NonNull WelcomePageBinding binding) {
+            /*ViewHolder needs View in constructor -> use getRoot(), not WelcomePageBinding itself*/
             super(binding.getRoot());
             this.binding = binding;
         }

@@ -2,7 +2,7 @@
     <string name="app_name">LoftCoin</string>
     <string name="splashScreen_name">LoftCoin</string>
 
-    <!--Welcome -->
+    <!--Welcome screen-->
     <string name="welcome_page_1_title">Покупка и продажа</string>
     <string name="welcome_page_1_subtitle">Покупай когда дешево, продавай когда дорого.</string>
     <string name="welcome_page_2_title">Курс криптовалют</string>

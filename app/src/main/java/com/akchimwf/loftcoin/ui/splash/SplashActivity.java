@@ -17,8 +17,10 @@ import com.akchimwf.loftcoin.ui.welcome.WelcomeActivity;
 
 public class SplashActivity extends AppCompatActivity {
 
+    /*needs Handler to postdelay start of activity (Main or Welcome)*/
     private final Handler handler = new Handler(Looper.getMainLooper());
 
+    /*use Runnable interface with lambda*/
     private Runnable goNext;
 
     private SharedPreferences prefs;
@@ -28,11 +30,14 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        /*store 'Show WelcomeActivity' flag at prefs */
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (prefs.getBoolean(WelcomeActivity.KEY_SHOW_WELCOME, true)) {
+            /*show WelcomeActivity*/
             goNext = () -> startActivity(new Intent(this, WelcomeActivity.class));
         } else {
+            /*if btnStart pressed -> go directly to MainActivity, no show WelcomeActivity*/
             goNext = () -> startActivity(new Intent(this, MainActivity.class));
         }
         handler.postDelayed(goNext, 1500);
@@ -40,6 +45,7 @@ public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
+        /*if WelcomeActivity stopped -> remove callback from Handler*/
         handler.removeCallbacks(goNext);
         super.onStop();
     }
