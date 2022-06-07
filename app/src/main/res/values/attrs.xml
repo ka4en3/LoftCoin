@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="buttonWelcome" format="reference" />
+    <attr name="walletCardWidth" format="dimension|reference" />
+    <attr name="walletCardHeight" format="dimension|reference" />
+    <attr name="walletCardBackground" format="color|reference" />
+    <attr name="percentNegative" format="color|reference" />
+    <attr name="percentPositive" format="color|reference" />
+</resources>

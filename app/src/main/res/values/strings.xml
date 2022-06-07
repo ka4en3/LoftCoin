@@ -10,4 +10,26 @@
     <string name="welcome_page_3_title">Конвертер валют</string>
     <string name="welcome_page_3_subtitle">Узнай сколько эфира в одном биткоине.</string>
     <string name="start_working">Начать работу</string>
+
+    <!-- Main Bottom menu -->
+    <string name="wallets">Кошельки</string>
+    <string name="rates">Курс</string>
+    <string name="converter">Конвертер</string>
+
+    <!-- Currency Dialog -->
+    <string name="choose_currency">Выбор валюты</string>
+    <string name="sort">Сортировать</string>
+
+    <!-- Rates Fragment -->
+    <string name="eur">Евро</string>
+    <string name="usd">Доллар</string>
+    <string name="rub">Рубль</string>
+
+    <!-- Notify -->
+    <string name="default_channel_id" translatable="false">default_channel</string>
+    <string name="default_channel_name">@string/app_name</string>
+
+    <!-- Wallets Fragment -->
+    <string name="add">Добавить</string>
+
 </resources>

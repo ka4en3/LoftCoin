@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.akchimwf.loftcoin.databinding.ActivityWelcomeBinding;
+import com.akchimwf.loftcoin.ui.widget.CircleIndicator;
 import com.akchimwf.loftcoin.ui.main.MainActivity;
 
 public class WelcomeActivity extends AppCompatActivity {
@@ -33,6 +34,9 @@ public class WelcomeActivity extends AppCompatActivity {
         /*set LayoutManager and adapter to RecycleView*/
         binding.recycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         binding.recycler.setAdapter(new WelcomeAdapter());
+
+        /*set itemDecorator*/
+        binding.recycler.addItemDecoration(new CircleIndicator(this));
 
         /*define Helper*/
         helper = new PagerSnapHelper();
