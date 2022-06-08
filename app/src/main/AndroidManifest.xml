@@ -15,15 +15,6 @@
         android:theme="@style/Theme.LoftCoin"
         tools:targetApi="31">
         <activity
-            android:name=".ui.wallets.WalletsFragment"
-            android:exported="false" />
-        <activity
-            android:name=".ui.rates.RatesFragment"
-            android:exported="false" />
-        <activity
-            android:name=".ui.converter.ConverterFragment"
-            android:exported="false" />
-        <activity
             android:name=".ui.welcome.WelcomeActivity"
             android:exported="false" />
         <activity
