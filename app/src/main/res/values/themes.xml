@@ -3,7 +3,7 @@
     <style name="Theme.LoftCoin" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/dark_six</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorPrimaryVariant">@color/dark_seven</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/grey_blue</item>
@@ -21,38 +21,21 @@
         <item name="textAppearanceHeadline2">@style/TextAppearance.Theme.LoftCoin.H2</item>
         <item name="textAppearanceHeadline3">@style/TextAppearance.Theme.LoftCoin.H3</item>
         <item name="textAppearanceHeadline4">@style/TextAppearance.Theme.LoftCoin.H4</item>
+        <item name="textAppearanceHeadline5">@style/TextAppearance.Theme.LoftCoin.H5</item>
+
+        <item name="walletCardWidth">240dp</item>
+        <item name="walletCardHeight">160dp</item>
+        <item name="walletCardBackground">@color/dark_five</item>
+
+        <item name="actionBarTheme">@style/Theme.LoftCoin.AppBarOverlay</item>
+        <item name="actionBarPopupTheme">@style/Theme.LoftCoin.PopupOverlay</item>
+
+        <item name="materialAlertDialogTheme">@style/Theme.LoftCoin.AlertDialog</item>
+        <item name="bottomNavigationStyle">@style/Theme.LoftCoin.BottomNavigationView</item>
+
+        <item name="percentNegative">@color/watermelon</item>
+        <item name="percentPositive">@color/weird_green</item>
     </style>
 
-    <!-- Create button "Welcome" theme, name=Widget.Theme.LoftCoin.Button.Welcome. -->
-    <style name="Widget.Theme.LoftCoin.Button.Welcome" parent="Widget.MaterialComponents.TextView">
-        <item name="android:background">@drawable/btn_welcome</item>
-        <item name="android:clickable">true</item>
-        <item name="android:focusable">true</item>
-        <item name="android:gravity">center</item>
-        <item name="android:paddingStart">64dp</item>
-        <item name="android:paddingEnd">64dp</item>
-        <item name="android:textAppearance">?attr/textAppearanceButton</item>
-    </style>
 
-    <!--Create Headers themes, inherited from TextAppearance.MaterialComponents.Body1-->
-    <style name="TextAppearance.Theme.LoftCoin" parent="TextAppearance.MaterialComponents.Body1" />
-
-    <style name="TextAppearance.Theme.LoftCoin.H1">
-        <item name="android:textSize">36sp</item>
-    </style>
-
-    <style name="TextAppearance.Theme.LoftCoin.H2">
-        <item name="android:textSize">24sp</item>
-    </style>
-
-    <style name="TextAppearance.Theme.LoftCoin.H3">
-        <item name="android:textSize">16sp</item>
-    </style>
-
-    <style name="TextAppearance.Theme.LoftCoin.H4">
-        <item name="android:textSize">14sp</item>
-    </style>
-
-    <!--create custom attribute-->
-    <attr name="buttonWelcome" format="reference" />
 </resources>

@@ -61,7 +61,7 @@ public class WelcomeAdapter extends RecyclerView.Adapter<WelcomeAdapter.ViewHold
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         /*store WelcomePageBinding instance in ViewHolder*/
-        final WelcomePageBinding binding;
+        private final WelcomePageBinding binding;
 
         public ViewHolder(@NonNull WelcomePageBinding binding) {
             /*ViewHolder needs View in constructor -> use getRoot(), not WelcomePageBinding itself*/
