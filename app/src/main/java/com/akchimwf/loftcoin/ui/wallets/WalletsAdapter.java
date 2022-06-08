@@ -39,16 +39,13 @@ public class WalletsAdapter extends RecyclerView.Adapter<WalletsAdapter.WalletsV
         inflater = LayoutInflater.from(recyclerView.getContext());
     }
 
-    public static class WalletsViewHolder extends RecyclerView.ViewHolder {
+    static class WalletsViewHolder extends RecyclerView.ViewHolder {
         /*store LiWalletBinding instance in WalletsViewHolder*/
         private final LiWalletBinding binding;
 
         public WalletsViewHolder(@NonNull LiWalletBinding binding) {
             /*WalletsViewHolder needs View in constructor -> use getRoot(), not WelcomePageBinding itself*/
             super(binding.getRoot());
-
-//            binding.getRoot().setClipToOutline(true);
-
             this.binding = binding;
         }
     }

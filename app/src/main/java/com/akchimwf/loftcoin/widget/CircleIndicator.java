@@ -1,4 +1,4 @@
-package com.akchimwf.loftcoin.ui.widget;
+package com.akchimwf.loftcoin.widget;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -33,7 +33,6 @@ public class CircleIndicator extends RecyclerView.ItemDecoration {
         activePaint.setStyle(Paint.Style.FILL);
         activePaint.setColor(Color.WHITE);
         activePaint.setAntiAlias(true);
-
     }
 
     @Override
