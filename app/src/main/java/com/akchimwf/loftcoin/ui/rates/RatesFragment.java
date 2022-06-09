@@ -17,18 +17,17 @@ import com.akchimwf.loftcoin.databinding.FragmentRatesBinding;
 
 import java.util.List;
 
-public class RatesFragment extends Fragment implements RatesView {
+public class RatesFragment extends Fragment {
     /*FragmentRatesBinding class comes from 'viewBinding' at build.grade*/
     private FragmentRatesBinding binding;
 
-    /*when Fragment switches to another, associated View is destroyed. But not Fragment -> all fields(and presenter) stays alive */
-    /*Presenter form MVP pattern*/
-    private RatesPresenter presenter;
+    private RatesAdapter adapter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        presenter = new RatesPresenter();
+        /*when closing Fragment, it stays alive, only associated View is destroyed. So we keep adapter alive on the Fragment lifecycle.*/
+        adapter = new RatesAdapter();
     }
 
     @Nullable
@@ -45,27 +44,20 @@ public class RatesFragment extends Fragment implements RatesView {
         /*don't inflate here, as we already inflated View in onCreateView. just bind View to FragmentRatesBinding*/
         binding = FragmentRatesBinding.bind(view);
         binding.recycler.setLayoutManager(new LinearLayoutManager(view.getContext()));
-        /*hasFixedSize – true if adapter changes cannot affect the size of the RecyclerView.*/
-        binding.recycler.setHasFixedSize(true); //TODO why?
-        /*attach (RatesFragment)View to Presenter*/
-        presenter.attach(this);  //TODO presenter.attach((RatesView) view); ?
+        /*Swaps the current adapter with the provided one.
+        It is similar to setAdapter(RecyclerView.Adapter) but assumes existing adapter and the new adapter uses
+        the same RecyclerView.ViewHolder and does not clear the RecycledViewPool.*/
+        /*Params:
+        adapter – The new adapter to set, or null to set no adapter.
+        removeAndRecycleExistingViews – If set to true, RecyclerView will recycle all existing Views.
+        If adapters have stable ids and/or you want to animate the disappearing views, you may prefer to set this to false.*/
+        binding.recycler.swapAdapter(adapter, false);
     }
 
     @Override
     public void onDestroyView() {
-        /*when Fragment switches to another, associated View is destroyed. But not Fragment -> all fields(and presenter) stays alive */
-        /*detach (RatesFragment)View from Presenter*/
-        presenter.detach(this);
+        /*when closing Fragment, it stays alive, only associated View is destroyed. So we keep adapter alive on the Fragment lifecycle.*/
+        binding.recycler.swapAdapter(null, false);
         super.onDestroyView();
-    }
-
-    @Override
-    public void showCoins(@NonNull List<? extends Coin> coins) {
-        binding.recycler.setAdapter(new RatesAdapter(coins));
-    }
-
-    @Override
-    public void showError(@NonNull String error) {
-
     }
 }
