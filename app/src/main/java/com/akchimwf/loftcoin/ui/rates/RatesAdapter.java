@@ -46,6 +46,8 @@ class RatesAdapter extends ListAdapter<Coin, RatesAdapter.ViewHolder> {
                 //can use oldItem.equals(newItem) too
             }
         });
+        /*as all Coins has ids*/
+        setHasStableIds(true);
     }
 
     @Override

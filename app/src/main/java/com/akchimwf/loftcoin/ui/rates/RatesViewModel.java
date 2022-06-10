@@ -10,6 +10,7 @@ import com.akchimwf.loftcoin.data.Coin;
 import com.akchimwf.loftcoin.data.CoinsRepo;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,10 +20,10 @@ import java.util.concurrent.Future;
 It also handles the communication of the Activity / Fragment with the rest of the application (e.g. calling the business logic classes).*/
 /*ViewModel's only responsibility is to manage the data for the UI.
 It should never access your view hierarchy or hold a reference back to the Activity or the Fragment.*/
-class RatesViewModel extends ViewModel {
+public class RatesViewModel extends ViewModel {
 
     /*get mutable data inside ViewModel*/
-    private final MutableLiveData<List<? extends Coin>> coins = new MutableLiveData<>();
+    private final MutableLiveData<List<Coin>> coins = new MutableLiveData<>();
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
@@ -31,14 +32,14 @@ class RatesViewModel extends ViewModel {
     /*A Future represents the result of an asynchronous computation.*/
     private Future<?> future;
 
-    RatesViewModel() {
+    public RatesViewModel() {
         repo = new CmcCoinsRepo();
         refresh();
     }
 
-    /*set immutable data outside ViewModel*/
+    /*push data outside ViewModel*/
     @NonNull
-    LiveData<List<? extends Coin>> coins() {
+    LiveData<List<Coin>> coins() {
         return coins;
     }
 
@@ -49,7 +50,9 @@ class RatesViewModel extends ViewModel {
         /*current executor makes request in a separate thread, but postValue sends to main thread*/
         future = executor.submit(() -> {
             try {
-                final List<? extends Coin> coins_from_repo = repo.listings("USD");
+                /*copy result of repo.listings to new ArrayList, on separate thread. */
+                /*because repo.listings returns List<? extends Coin> and we need List<Coin>*/
+                final List<Coin> coins_from_repo = new ArrayList<>(repo.listings("USD"));
                 /*postValue send coins to the main thread  as all UI interaction should be there*/
                 /*Posts a task to a main thread to set the given value.*/
                 this.coins.postValue(coins_from_repo);

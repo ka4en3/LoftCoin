@@ -10,15 +10,15 @@
 
     <ImageView
         android:id="@+id/logo_rates"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:paddingTop="20dp"
         android:paddingBottom="20dp"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:src="@drawable/ic_logo_card" />
+        app:layout_constraintTop_toTopOf="parent"/>
+        <!--tools:src="@tools:sample/avatars"--> <!--use collection of avatars for preview-->
 
     <TextView
         android:id="@+id/symbol"
