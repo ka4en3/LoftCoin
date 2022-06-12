@@ -14,6 +14,7 @@ android {
 
         buildConfigField "String", "API_KEY", "\"${pApiKey}\""
         buildConfigField "String", "API_ENDPOINT", '"https://pro-api.coinmarketcap.com/v1/"'
+        buildConfigField "String", "IMG_ENDPOINT", '"https://s2.coinmarketcap.com/static/img/coins/128x128/"'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

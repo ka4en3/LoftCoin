@@ -14,7 +14,7 @@ public class LoftApp extends Application {
         super.onCreate();
         if (BuildConfig.DEBUG){
             StrictMode.enableDefaults();
-            Timber.plant(new DebugTree()); //for Releases should use ReleaseTree() to send crash to some analytics
+            Timber.plant(new DebugTree()); //for Releases should use ReleaseTree() to send crash to some analytics system
         }
     }
 }

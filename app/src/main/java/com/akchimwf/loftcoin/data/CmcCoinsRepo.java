@@ -8,7 +8,6 @@ import com.squareup.moshi.Moshi;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -17,6 +16,7 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
+import timber.log.Timber;
 
 /*implementation of CoinsRepo interface according to CoinMarketCap coins list*/
 /*this is Data Layer according to Clean Architecture*/
@@ -54,18 +54,31 @@ public class CmcCoinsRepo implements CoinsRepo {
     private OkHttpClient createHttpClient() {
         final OkHttpClient.Builder builder = new OkHttpClient.Builder();
         /*add Interceptor interface, implementing its method "public Response intercept(@NonNull Chain chain)" with a lambda*/
+
         builder.addInterceptor(chain -> {
             /*get Request*/
             final Request request = chain.request();
+
             /*modify Request with API_KEY*/
-            return chain.proceed(request.newBuilder()
+            okhttp3.Response resp = chain.proceed(request.newBuilder()
                     .addHeader(CmcAPI.API_KEY, BuildConfig.API_KEY)
                     .build()
             );
+            return resp;
         });
         /*add logging Interceptor*/
         if (BuildConfig.DEBUG) {
-            final HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
+
+            /*override of debug logging*/
+            HttpLoggingInterceptor.Logger logger = new HttpLoggingInterceptor.Logger() {
+                @Override
+                public void log(@NonNull String message) {
+                    Timber.d(message);  //here we can catch response from server in XML
+                }
+            };
+
+            final HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor(logger);
+
             /*set to log HEADERS*/
             interceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
             interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -76,10 +89,14 @@ public class CmcCoinsRepo implements CoinsRepo {
             or in a non-production environment.
             You can redact headers that may contain sensitive information by calling redactHeader().*/
             interceptor.redactHeader(CmcAPI.API_KEY);
+
             builder.addInterceptor(interceptor);
         }
+
         /*return instance of OkHttpClient*/
-        return builder.build();
+        OkHttpClient client = builder.build();
+
+        return client;
     }
 
     /*creating Retrofit setting with OkHttpClient*/

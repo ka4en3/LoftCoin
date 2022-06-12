@@ -9,7 +9,7 @@
     android:paddingEnd="16dp">
 
     <ImageView
-        android:id="@+id/logo_rates"
+        android:id="@+id/logo"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:paddingTop="20dp"
@@ -17,51 +17,55 @@
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-        <!--tools:src="@tools:sample/avatars"--> <!--use collection of avatars for preview-->
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@tools:sample/avatars"/>
+    <!--use collection of avatars for preview-->
 
     <TextView
         android:id="@+id/symbol"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif"
-        android:textStyle="bold"
         android:paddingStart="16dp"
         android:textAppearance="?attr/textAppearanceHeadline3"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/logo_rates"
-        app:layout_constraintTop_toTopOf="parent"/>
-<!--        tools:text="@sample/coins.json/data/symbol" />-->
+        app:layout_constraintStart_toEndOf="@id/logo"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@sample/coins.json/data/symbol" />
+    <!--use example of JSON response from server-->
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrier"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:barrierDirection="end"
         android:paddingEnd="16dp"
-        app:constraint_referenced_ids="price,percent" />
+        app:barrierDirection="end"
+        app:constraint_referenced_ids="price,change" />
 
     <TextView
         android:id="@+id/price"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif"
-        android:textStyle="bold"
         android:paddingTop="14dp"
         android:textAppearance="?attr/textAppearanceHeadline3"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/change"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintBottom_toTopOf="@id/percent"/>
-<!--        tools:text="@sample/coins.json/data/quote/USD/price" />-->
+        tools:text="@sample/coins.json/data/quote/USD/price" />
+    <!--use example of JSON response from server-->
 
     <TextView
-        android:id="@+id/percent"
+        android:id="@+id/change"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?attr/textAppearanceHeadline4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/price"
-        app:layout_constraintVertical_chainStyle="packed" />
-<!--        tools:text="@sample/coins.json/data/quote/USD/percent_change_24h" />-->
+        app:layout_constraintVertical_chainStyle="packed"
+        tools:text="@sample/coins.json/data/quote/USD/percent_change_24h" />
+    <!--use example of JSON response from server-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

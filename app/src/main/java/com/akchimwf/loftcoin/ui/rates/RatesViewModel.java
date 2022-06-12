@@ -25,6 +25,8 @@ public class RatesViewModel extends ViewModel {
     /*get mutable data inside ViewModel*/
     private final MutableLiveData<List<Coin>> coins = new MutableLiveData<>();
 
+    private final MutableLiveData<Boolean> isRefreshing = new MutableLiveData<>();
+
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private final CoinsRepo repo;
@@ -43,19 +45,31 @@ public class RatesViewModel extends ViewModel {
         return coins;
     }
 
+    @NonNull
+    LiveData<Boolean> isRefreshing() {
+        return isRefreshing;
+    }
+
+    /*in our case refresh() called only from main thread*/
     final void refresh() {
+        /*postValue sends isRefreshing to the main thread as all UI interaction should be there*/
+        /*Posts a task to a main thread to set the given value.*/
+        isRefreshing.postValue(true);
+
         /*Submits a Runnable task for execution and returns a Future representing that task.
         The Future's get method will return null upon successful completion.*/
         /*use lambda for Runnable interface*/
         /*current executor makes request in a separate thread, but postValue sends to main thread*/
         future = executor.submit(() -> {
             try {
-                /*copy result of repo.listings to new ArrayList, on separate thread. */
                 /*because repo.listings returns List<? extends Coin> and we need List<Coin>*/
+                /*copy result of repo.listings to new ArrayList, on separate thread. */
                 final List<Coin> coins_from_repo = new ArrayList<>(repo.listings("USD"));
-                /*postValue send coins to the main thread  as all UI interaction should be there*/
+                /*postValue sends coins to the main thread as all UI interaction should be there*/
                 /*Posts a task to a main thread to set the given value.*/
                 this.coins.postValue(coins_from_repo);
+
+                isRefreshing.postValue(false);
             } catch (IOException e) {
                 e.printStackTrace();
             }

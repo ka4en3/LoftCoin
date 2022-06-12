@@ -27,7 +27,7 @@ public abstract class Coin {
         /*Returns an Iterator<Quote> over the elements in this collection (quote()).
         There are no guarantees concerning the order in which the elements are returned */
         Iterator<? extends Quote> iterator = quote().values().iterator();
-        //TODO just take first currency in Map?
+        /* only take the first currency in the Map! as only USD in REST-API response*/
         if (iterator.hasNext()) return iterator.next().price();
         return 0d;
     }
@@ -48,7 +48,7 @@ public abstract class Coin {
     abstract static class Quote {
         public abstract double price();
 
-        @Json(name = "percent_change_24")    //parce change24h to percent_change_24
+        @Json(name = "percent_change_24h")    //parce change24h to percent_change_24h
         @AutoValue.CopyAnnotations           //copy annotation to auto generated class
         public abstract double change24h();
     }

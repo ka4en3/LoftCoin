@@ -9,7 +9,7 @@ import java.util.List;
 /*interface for Repository according to and Clean Architecture*/
 public interface CoinsRepo {
     @NonNull
-    @WorkerThread   //separate thread
+    @WorkerThread   //non-main thread
     /*currency - set currency for a list of coins*/
     List<? extends Coin> listings(@NonNull String currency) throws IOException;
 }
