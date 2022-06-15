@@ -40,7 +40,7 @@ public class SplashActivity extends AppCompatActivity {
             /*if btnStart pressed -> go directly to MainActivity, no show WelcomeActivity*/
             goNext = () -> startActivity(new Intent(this, MainActivity.class));
         }
-        handler.postDelayed(goNext, 1500);
+        handler.postDelayed(goNext, 500);
     }
 
     @Override

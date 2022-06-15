@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.akchimwf.loftcoin.databinding.ActivityWelcomeBinding;
-import com.akchimwf.loftcoin.ui.widget.CircleIndicator;
+import com.akchimwf.loftcoin.widget.CircleIndicator;
 import com.akchimwf.loftcoin.ui.main.MainActivity;
 
 public class WelcomeActivity extends AppCompatActivity {

@@ -22,4 +22,11 @@
         android:name="com.akchimwf.loftcoin.ui.converter.ConverterFragment"
         android:label="@string/converter"
         tools:layout="@layout/fragment_converter" />
+
+    <!--id/currency_dialog should be equal to rates.xml view-->
+    <dialog
+        android:id="@+id/currency_dialog"
+        android:name="com.akchimwf.loftcoin.ui.currency.CurrencyDialog"
+        android:label="CurrencyDialog"
+        tools:layout="@layout/dialog_currency" />
 </navigation>
