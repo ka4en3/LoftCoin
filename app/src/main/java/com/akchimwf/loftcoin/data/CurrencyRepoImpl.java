@@ -10,12 +10,19 @@ import com.akchimwf.loftcoin.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CurrencyRepoImpl implements CurrencyRepo {
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
+/*Not public as use Dagger and DI*/
+class CurrencyRepoImpl implements CurrencyRepo {
 
     private final Context context;
 
     /*Context as input as we need localization from Resources*/
-    public CurrencyRepoImpl(@NonNull Context context) {
+    /*Not public as use Dagger and DI*/
+    @Inject
+    CurrencyRepoImpl(@NonNull Context context) {
         this.context = context;
     }
 

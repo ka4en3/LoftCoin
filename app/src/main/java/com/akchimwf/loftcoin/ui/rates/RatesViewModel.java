@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import com.akchimwf.loftcoin.data.CmcCoinsRepo;
+import com.akchimwf.loftcoin.data.CmcCoin;
 import com.akchimwf.loftcoin.data.Coin;
 import com.akchimwf.loftcoin.data.CoinsRepo;
 
@@ -16,10 +16,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import timber.log.Timber;
+
 /*ViewModel is a class that is responsible for preparing and managing the data for an Activity or a Fragment.
 It also handles the communication of the Activity / Fragment with the rest of the application (e.g. calling the business logic classes).*/
 /*ViewModel's only responsibility is to manage the data for the UI.
 It should never access your view hierarchy or hold a reference back to the Activity or the Fragment.*/
+@Singleton
 public class RatesViewModel extends ViewModel {
 
     /*get mutable data inside ViewModel*/
@@ -29,13 +35,17 @@ public class RatesViewModel extends ViewModel {
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    private final CoinsRepo repo;
+    private final CoinsRepo coinsRepo;
 
     /*A Future represents the result of an asynchronous computation.*/
     private Future<?> future;
 
-    public RatesViewModel() {
-        repo = new CmcCoinsRepo();
+    // AppComponent(BaseComponent) -> MainUIComponent -> Fragment(BaseComponent) -> RatesComponent -> RatesViewModel()
+    /*this is the whole chain how we push coinsRepo from BaseComponent to RatesViewModel*/
+
+    @Inject
+    public RatesViewModel(CoinsRepo coinsRepo) {
+        this.coinsRepo = coinsRepo;
         refresh();
     }
 
@@ -62,16 +72,16 @@ public class RatesViewModel extends ViewModel {
         /*current executor makes request in a separate thread, but postValue sends to main thread*/
         future = executor.submit(() -> {
             try {
-                /*because repo.listings returns List<? extends Coin> and we need List<Coin>*/
-                /*copy result of repo.listings to new ArrayList, on separate thread. */
-                final List<Coin> coins_from_repo = new ArrayList<>(repo.listings("USD"));
-                /*postValue sends coins to the main thread as all UI interaction should be there*/
-                /*Posts a task to a main thread to set the given value.*/
+                /*because coinsRepo.listings returns List<? extends CmcCoin> and we need List<CmcCoin>
+                copy result of repo.listings to new ArrayList, on separate thread.*/
+                final List<Coin> coins_from_repo = new ArrayList<>(coinsRepo.listings("USD"));
+               /* postValue sends coins to the main thread as all UI interaction should be there
+                Posts a task to a main thread to set the given value.*/
                 this.coins.postValue(coins_from_repo);
 
                 isRefreshing.postValue(false);
             } catch (IOException e) {
-                e.printStackTrace();
+                Timber.e(e);
             }
         });
     }

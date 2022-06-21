@@ -3,7 +3,6 @@ package com.akchimwf.loftcoin.data;
 import androidx.annotation.NonNull;
 
 import com.google.auto.value.AutoValue;
-import com.google.auto.value.extension.memoized.Memoized;
 
 /*model of a Currency*/
 /*Java has its own Currency class, so we can use it if needs*/

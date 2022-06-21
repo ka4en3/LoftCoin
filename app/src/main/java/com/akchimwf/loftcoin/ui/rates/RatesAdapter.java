@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.akchimwf.loftcoin.BuildConfig;
 import com.akchimwf.loftcoin.R;
+import com.akchimwf.loftcoin.data.CmcCoin;
 import com.akchimwf.loftcoin.data.Coin;
 import com.akchimwf.loftcoin.databinding.LiRatesBinding;
 import com.akchimwf.loftcoin.util.formatter.Formatter;

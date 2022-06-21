@@ -53,9 +53,9 @@ dependencies {
 
     /*auto.value library generates source code for immutable Java classes - analog of data-classes from Kotlin */
     /*annotations needs only at compilation -> compileOnly*/
-    compileOnly  "com.google.auto.value:auto-value-annotations:1.8.1"
+    compileOnly  'com.google.auto.value:auto-value-annotations:1.8.1'
     /*processor generates code*/
-    annotationProcessor "com.google.auto.value:auto-value:1.8.1"
+    annotationProcessor 'com.google.auto.value:auto-value:1.8.1'
 
     /*JSON parser library*/
     implementation "com.squareup.moshi:moshi:1.12.0"
@@ -75,11 +75,16 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-livedata:2.4.1"
 
     //Dagger
-    implementation 'javax.inject:javax.inject:1'
+    implementation "javax.inject:javax.inject:1"
     implementation 'com.google.dagger:dagger:2.36'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.36'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+    //Room
+    def room_version = "2.3.0"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
 }
