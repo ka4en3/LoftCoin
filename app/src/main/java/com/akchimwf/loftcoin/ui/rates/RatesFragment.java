@@ -55,7 +55,8 @@ public class RatesFragment extends Fragment {
         /*when closing Fragment, it stays alive, only associated View is destroyed.
         So we keep adapter alive on the Fragment lifecycle. - PROBABLY IT'S NOT TRUE WHEN FRAGMENTS CREATING WITH NAVIGATION
         - THEY ARE CREATING EVERYTIME AGAIN*/
-        adapter = new RatesAdapter(new PriceFormatter(), new PercentFormatter());
+//        adapter = new RatesAdapter(new PriceFormatter(), new PercentFormatter());
+        adapter = component.ratesAdapter();
 
         /*Creates ViewModelProvider. This will create ViewModels and retain them in a store of the given ViewModelStoreOwner.*/
         /*get -> Returns an existing ViewModel or creates a new one in the scope (usually, a fragment or an activity), associated with this ViewModelProvider.*/
@@ -120,6 +121,8 @@ public class RatesFragment extends Fragment {
                 viewModel.refresh();
             }
         });
+        /*could use also: */
+        /*binding.refresher.setOnRefreshListener(viewModel::refresh);*/
     }
 
     @Override
@@ -141,6 +144,10 @@ public class RatesFragment extends Fragment {
                     /*RatesFragment don't know which Fragment will be shown on click -> no direct connections between fragments*/
                     /*can replace currency_dialog in Navigation graph without any problems with dependencies*/
                     .navigate(R.id.currency_dialog);
+            return true;
+        /*if clicked on sort in menu*/
+        } else if (item.getItemId() == R.id.sort_dialog) {
+            viewModel.switchSortingOrder();
             return true;
         }
         return super.onOptionsItemSelected(item);

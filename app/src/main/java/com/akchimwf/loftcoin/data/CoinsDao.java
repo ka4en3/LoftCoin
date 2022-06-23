@@ -23,6 +23,14 @@ abstract class CoinsDao {
     /*Room could provide LiveData and change it according to DB changing*/
     abstract LiveData<List<RoomCoin>> fetchAll();
 
+    @Query("select * from RoomCoin order by price DESC")
+    /*Room could provide LiveData and change it according to DB changing*/
+    abstract LiveData<List<RoomCoin>> fetchAllSortByPrice();
+
+    @Query("select * from RoomCoin order by rank ASC")
+    /*Room could provide LiveData and change it according to DB changing*/
+    abstract LiveData<List<RoomCoin>> fetchAllSortByRank();
+
     /*Blocking UI method -> @WorkerThread: we annotate a method or class with this to indicate it MUST be executed on a different thread than Main/UI Thread*/
     @WorkerThread
     @Query("select count(id) from RoomCoin")

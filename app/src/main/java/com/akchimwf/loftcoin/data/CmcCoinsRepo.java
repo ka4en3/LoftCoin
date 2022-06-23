@@ -38,6 +38,7 @@ class CmcCoinsRepo implements CoinsRepo {
         this.executor = executor;
     }
 
+/*  //old method realization
     @NonNull
     @Override
     public List<? extends Coin> listings(@NonNull String currency) throws IOException {
@@ -54,82 +55,72 @@ class CmcCoinsRepo implements CoinsRepo {
                 throw new IOException(responseBody.string());
             }
         }
-        /*in other cases return empty list*/
+        //in other cases return empty list
         return Collections.emptyList();
-    }
+    }*/
 
     @NonNull
     @Override
     public LiveData<List<Coin>> listings(@NonNull Query query) {
-        /*LiveData for Refresh Flag (update or not data from server)*/
-        final MutableLiveData<Boolean> refresh = new MutableLiveData<>();
-        /*Manage threads here as coinsCount() annotated with @WorkerThread*/
-        executor.submit(() -> {
-            /*Post a task to a main thread to set Refresh Flag. Refresh if forceUpdate() == true, or RoomCoin table has no records */
-            refresh.postValue(query.forceUpdate() || db.coins().coinsCount() == 0);
-        });
-
-        /*Transformation method for LiveData.*/
-        /*transformation of LiveData from Boolean to List<Coin>*/
-        /*switchMap - Returns a LiveData mapped from the input source LiveData by applying switchMapFunction to each value set on source.*/
-        /*switchMap returns new LiveData<List<Coin>>*/
-        return Transformations.switchMap(refresh,
-                new Function<Boolean, LiveData<List<Coin>>>() {
-                    @Override
-                    public LiveData<List<Coin>> apply(Boolean r) {
-                        if (r) return fetchFromNetwork(query);
-                        else return fetchFromDB(query);
-                    }
-                });
+        fetchFromNetworkIfNecessary(query);
+        return fetchFromDB(query);
     }
 
     private LiveData<List<Coin>> fetchFromDB(Query query) {
+        /*LiveData for RoomCoins*/
+        LiveData<List<RoomCoin>> coins;
+
+        /*fetching from db according to query.sortBy()*/
+        if (query.sortBy() == SortBy.PRICE) {
+            coins = db.coins().fetchAllSortByPrice();
+        } else {
+            coins = db.coins().fetchAllSortByRank();
+        }
+
         /*Transformation method for LiveData.*/
         /*transformation of LiveData from List<RoomCoin> to List<Coin>*/
         /*map - Returns a LiveData mapped from the input source LiveData by applying mapFunction to each value set on source.*/
-        return Transformations.map(db.coins().fetchAll(), new Function<List<RoomCoin>, List<Coin>>() {
+        return Transformations.map(coins, new Function<List<RoomCoin>, List<Coin>>() {
             @Override
-            /*input parameter(coins) should be type of return fetchAll() function*/
+            /*input parameter(coins) should have type of fetchAll() function return*/
             public List<Coin> apply(List<RoomCoin> coins) {
-                /*List<RoomCoin> -> List<Coin>*/
+                /*trick to transform List<RoomCoin> to List<Coin>*/
                 return new ArrayList<>(coins);
             }
         });
     }
 
-    private LiveData<List<Coin>> fetchFromNetwork(Query query) {
-        /*LiveData for coins*/
-        final MutableLiveData<List<Coin>> liveData = new MutableLiveData<>();
+    /*method if necessary get data from server and save to db*/
+    private void fetchFromNetworkIfNecessary(Query query) {
         /*as request to network are asynchronous -> use own executor*/
+        /*Manage threads here as coinsCount() annotated with @WorkerThread*/
         executor.submit(() -> {
-            try {
-                final Response<Listings> response = api.listings(query.currency()).execute();
-                if (response.isSuccessful()) {
-                    final Listings listings = response.body();
-                    if (listings != null) {
-                        final List<AutoValue_CmcCoin> cmcCoins = listings.data();
-
-                        /*save data from network to DB*/
-                        saveCoinsIntoDB(cmcCoins);
-
-                        /*List<AutoValue_CmcCoin> -> List<Coin>*/
-                        liveData.postValue(new ArrayList<>(cmcCoins));
+            /*if forceUpdate() == true, or RoomCoin table has no records */
+            if (query.forceUpdate() || db.coins().coinsCount() == 0) {
+                try {
+                    final Response<Listings> response = api.listings(query.currency()).execute();
+                    if (response.isSuccessful()) {
+                        final Listings listings = response.body();
+                        if (listings != null) {
+                            /*save data from network to DB*/
+                            /*on separate thread as this method called from asynchronous request*/
+                            saveCoinsIntoDB(query, listings.data());
+                        }
+                    } else {
+                        final ResponseBody responseBody = response.errorBody();
+                        if (responseBody != null) {
+                            throw new IOException(responseBody.string());
+                        }
                     }
-                } else {
-                    final ResponseBody responseBody = response.errorBody();
-                    if (responseBody != null) {
-                        throw new IOException(responseBody.string());
-                    }
+                } catch (IOException e) {
+                    Timber.e(e);
                 }
-            } catch (IOException e) {
-                Timber.e(e);
             }
         });
-        return liveData;
     }
 
     /*on separate thread as this method called from asynchronous request*/
-    private void saveCoinsIntoDB(List<? extends Coin> cmcCoins) {
+    private void saveCoinsIntoDB(Query query, List<? extends Coin> cmcCoins) {
         /*can't set List<RoomCoin> roomCoins = new ArrayList<>(cmcCoins) directly*/
         List<RoomCoin> roomCoins = new ArrayList<>(cmcCoins.size());
         /*manually creating List<RoomCoin>*/
@@ -140,8 +131,9 @@ class CmcCoinsRepo implements CoinsRepo {
                     coin.rank(),
                     coin.price(),
                     coin.change24h(),
+                    query.currency(),  //get currency directly from query, some excess data for save in DB, but easier to handle further with currency viewing
                     coin.id()
-                    ));
+            ));
         }
         db.coins().insert(roomCoins);
     }

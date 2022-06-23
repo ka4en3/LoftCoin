@@ -6,6 +6,7 @@ import android.content.Context;
 import com.akchimwf.loftcoin.data.CoinsRepo;
 import com.akchimwf.loftcoin.data.CurrencyRepo;
 import com.akchimwf.loftcoin.data.DataModule;
+import com.akchimwf.loftcoin.util.UtilModule;
 
 import javax.inject.Singleton;
 
@@ -27,11 +28,12 @@ In short - scopes give us “local singletons” which live as long as scope its
 @Component(
         modules = {
                 AppModule.class,
-                DataModule.class
+                DataModule.class,
+                UtilModule.class
         }
 )
 /*not public, as BaseComponent used in LoftApp*/
-abstract class AppComponent implements BaseComponent{
+abstract class AppComponent implements BaseComponent {
 
     @Component.Builder
     static abstract class Builder {

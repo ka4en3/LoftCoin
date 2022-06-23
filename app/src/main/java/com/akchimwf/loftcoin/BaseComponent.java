@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.akchimwf.loftcoin.data.CoinsRepo;
 import com.akchimwf.loftcoin.data.CurrencyRepo;
+import com.akchimwf.loftcoin.util.ImageLoader;
 
 /*is needed to use in dependencies in MainUIComponent, as using scoped components (like AppComponent) directly not allowed by Dagger */
 public interface BaseComponent {
@@ -15,4 +16,7 @@ public interface BaseComponent {
 
     /*when AppComponent needs CurrencyRepo, it will be taken from DataModule*/
     abstract CurrencyRepo currencyRepo();
+
+    /*when AppComponent needs ImageLoader, it will be taken from UtilModule*/
+    abstract ImageLoader imageLoader();
 }

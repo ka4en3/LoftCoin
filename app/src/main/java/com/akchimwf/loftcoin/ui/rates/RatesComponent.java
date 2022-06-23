@@ -16,9 +16,12 @@ import dagger.Component;
                 ViewModelModule.class
         }, dependencies = {
         BaseComponent.class
-}
-)
-public abstract class RatesComponent {
+})
+
+abstract class RatesComponent {
     /*to call this method as component.viewModelFactory()*/
     abstract ViewModelProvider.Factory viewModelFactory();
+
+    /*to call this method as adapter = component.ratesAdapter();*/
+    abstract RatesAdapter ratesAdapter();
 }

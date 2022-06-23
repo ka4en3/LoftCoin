@@ -11,11 +11,14 @@ import java.util.List;
 
 /*interface for Repository according to and Clean Architecture*/
 public interface CoinsRepo {
+/*
+
+    //old method
     @NonNull
-    @WorkerThread
-        //non-main thread
-        /*currency - set currency for a list of coins*/
+    @WorkerThread //non-main thread
+    //currency - set currency for a list of coins
     List<? extends Coin> listings(@NonNull String currency) throws IOException;
+*/
 
     @NonNull
     LiveData<List<Coin>> listings(@NonNull Query query);
@@ -36,15 +39,19 @@ public interface CoinsRepo {
 
         abstract Boolean forceUpdate();   //reload data from server or not
 
+        abstract SortBy sortBy();
+
         @AutoValue.Builder   //AutoValue allows to make Builder
         /*public as Builder must be called from outside package*/
-        abstract static class Builder {
+        public abstract static class Builder {
             /*Builder must contain all setters and method 'build()'*/
-            abstract Builder currency(String currency);
+            public abstract Builder currency(String currency);
 
-            abstract Builder forceUpdate(Boolean forceUpdate);
+            public abstract Builder forceUpdate(Boolean forceUpdate);
 
-            abstract Query build();
+            public abstract Builder sortBy(SortBy sortBy);
+
+            public abstract Query build();
         }
     }
 }

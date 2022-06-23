@@ -4,7 +4,17 @@ import androidx.annotation.NonNull;
 
 import java.util.Locale;
 
+import javax.inject.Inject;
+
 public class PercentFormatter implements Formatter<Double> {
+
+    /*no @Binds, no @Provides in any @Module.
+    Place PercentFormatter class in Component as is (because not binding interface or abstract to some custom realization)*/
+    /*@Inject is enough*/
+    @Inject
+    public PercentFormatter() {
+    }
+
     @NonNull
     @Override
     public String format(@NonNull Double value) {

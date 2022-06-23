@@ -19,8 +19,10 @@ public abstract class RoomCoin implements Coin {
             int rank,
             double price,
             double change24h,
+            String currencyCode,
+            /*id - the last field, as it redefined as primary key*/
             int id) {
-        return new AutoValue_RoomCoin(name, symbol, rank, price, change24h, id);
+        return new AutoValue_RoomCoin(name, symbol, rank, price, change24h, currencyCode, id);
     }
 
     @Override

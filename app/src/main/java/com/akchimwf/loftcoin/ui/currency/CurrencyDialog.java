@@ -2,6 +2,8 @@ package com.akchimwf.loftcoin.ui.currency;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -9,11 +11,13 @@ import androidx.appcompat.app.AppCompatDialogFragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.akchimwf.loftcoin.BaseComponent;
 import com.akchimwf.loftcoin.R;
 import com.akchimwf.loftcoin.data.Currency;
 import com.akchimwf.loftcoin.databinding.DialogCurrencyBinding;
+import com.akchimwf.loftcoin.util.OnItemClick;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
@@ -31,6 +35,8 @@ public class CurrencyDialog extends AppCompatDialogFragment {
     private final CurrencyComponent component;
 
     private CurrencyViewModel viewModel;
+
+    private OnItemClick onItemClick;
 
     @Inject
     public CurrencyDialog(BaseComponent baseComponent) {
@@ -71,6 +77,21 @@ public class CurrencyDialog extends AppCompatDialogFragment {
         });
         /*currencyRepo.availableCurrencies().observe(this, adapter::submitList);*/
 
+        /*set onClickListener*/
+        onItemClick = new OnItemClick(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final RecyclerView.ViewHolder containingViewHolder = binding.recycler.findContainingViewHolder(v);
+                if (containingViewHolder != null) {
+                    /*update chosen in dialog currency*/
+                    viewModel.updateCurrency(adapter.getItem(containingViewHolder.getAdapterPosition())); //Returns the Adapter position of the item represented by this ViewHolder.
+                }
+                /*close the dialog - standard way*/
+                dismissAllowingStateLoss();
+            }
+        });
+        binding.recycler.addOnItemTouchListener(onItemClick);
+
         return new MaterialAlertDialogBuilder(requireActivity())
                 .setTitle(R.string.choose_currency)
                 .setView(binding.getRoot())
@@ -95,6 +116,7 @@ public class CurrencyDialog extends AppCompatDialogFragment {
     public void onDestroy() {
         /*cleaning*/
         binding.recycler.setAdapter(null);
+        binding.recycler.removeOnItemTouchListener(onItemClick);
         super.onDestroy();
     }
 }
