@@ -47,7 +47,7 @@ class RatesAdapter extends ListAdapter<Coin, RatesAdapter.ViewHolder> {
     private int colorPositive = Color.GREEN;
     private final PriceFormatter priceFormatter;
     private final PercentFormatter percentFormatter;
-    private ImageLoader imageLoader;
+    private final ImageLoader imageLoader;
 
     /*no @Binds, no @Provides in any @Module.
     Place RatesAdapter class in Component as is (because not binding interface or abstract to some custom realization)*/
@@ -99,7 +99,8 @@ class RatesAdapter extends ListAdapter<Coin, RatesAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LiRatesBinding.inflate(inflater, parent, false));
+        ViewHolder viewHolder = new ViewHolder(LiRatesBinding.inflate(inflater, parent, false));
+        return viewHolder;
     }
 
     /*default onBindViewHolder*/
@@ -108,6 +109,8 @@ class RatesAdapter extends ListAdapter<Coin, RatesAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull RatesAdapter.ViewHolder holder, int position) {
         /*getItem -> method from ListAdapter*/
         final Coin coin = getItem(position);
+
+        //if (position % 2 == 0) holder.binding.getRoot().setBackgroundColor(R.color.dark_two);
 
         holder.binding.symbol.setText(coin.symbol());
 
@@ -142,6 +145,11 @@ class RatesAdapter extends ListAdapter<Coin, RatesAdapter.ViewHolder> {
             /*binding only changed fields: price and change24*/
             holder.binding.price.setText(priceFormatter.format(coin.currencyCode(), coin.price()));
             holder.binding.change.setText(percentFormatter.format(coin.change24h()));
+            if (coin.change24h() > 0) {
+                holder.binding.change.setTextColor(colorPositive);
+            } else {
+                holder.binding.change.setTextColor(colorNegative);
+            }
         }
     }
 

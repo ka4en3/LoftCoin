@@ -7,6 +7,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.os.Bundle;
@@ -22,6 +23,7 @@ import com.akchimwf.loftcoin.R;
 import com.akchimwf.loftcoin.data.CmcCoin;
 import com.akchimwf.loftcoin.data.Coin;
 import com.akchimwf.loftcoin.databinding.FragmentRatesBinding;
+import com.akchimwf.loftcoin.databinding.LiRatesBinding;
 import com.akchimwf.loftcoin.util.formatter.PercentFormatter;
 import com.akchimwf.loftcoin.util.formatter.PriceFormatter;
 
@@ -38,6 +40,7 @@ public class RatesFragment extends Fragment {
     private RatesAdapter adapter;
 
     private RatesViewModel viewModel;
+    private int bgCounter = 0;
 
     @Inject
     public RatesFragment(BaseComponent baseComponent) {
@@ -106,6 +109,20 @@ public class RatesFragment extends Fragment {
             }
         });
 
+        binding.recycler.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+            @Override
+            public void onChildViewAttachedToWindow(@NonNull View view) {
+                if (bgCounter++ % 2 == 0)
+                    view.setBackgroundColor(getResources().getColor(R.color.dark_two));
+                else view.setBackgroundColor(getResources().getColor(R.color.dark_six));
+            }
+
+            @Override
+            public void onChildViewDetachedFromWindow(@NonNull View view) {
+
+            }
+        });
+
         viewModel.isRefreshing().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean refreshing) {
@@ -145,7 +162,7 @@ public class RatesFragment extends Fragment {
                     /*can replace currency_dialog in Navigation graph without any problems with dependencies*/
                     .navigate(R.id.currency_dialog);
             return true;
-        /*if clicked on sort in menu*/
+            /*if clicked on sort in menu*/
         } else if (item.getItemId() == R.id.sort_dialog) {
             viewModel.switchSortingOrder();
             return true;
