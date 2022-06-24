@@ -1,6 +1,8 @@
 package com.akchimwf.loftcoin.data;
 
+import io.reactivex.Observable;
 import retrofit2.Call;
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
@@ -13,5 +15,6 @@ public interface CmcAPI {
 
     /*REST-API GET request*/
     @GET("cryptocurrency/listings/latest")
-    Call<Listings> listings(@Query("convert") String convert);
+    /*addCallAdapterFactory - this adapter in Retrofit allows to convert Call (from CmcAPI) to Observable*/
+    Observable<Listings> listings(@Query("convert") String convert);
 }

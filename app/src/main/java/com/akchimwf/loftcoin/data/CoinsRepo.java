@@ -9,19 +9,12 @@ import com.google.auto.value.AutoValue;
 import java.io.IOException;
 import java.util.List;
 
+import io.reactivex.Observable;
+
 /*interface for Repository according to and Clean Architecture*/
 public interface CoinsRepo {
-/*
-
-    //old method
     @NonNull
-    @WorkerThread //non-main thread
-    //currency - set currency for a list of coins
-    List<? extends Coin> listings(@NonNull String currency) throws IOException;
-*/
-
-    @NonNull
-    LiveData<List<Coin>> listings(@NonNull Query query);
+    Observable<List<Coin>> listings(@NonNull Query query);
 
     /*Inner class contained Query for LiveData<List<Coin>> listings(), can easy modify without modify of method listings()*/
     @AutoValue

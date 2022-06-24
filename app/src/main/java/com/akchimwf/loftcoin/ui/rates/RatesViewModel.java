@@ -13,6 +13,7 @@ import com.akchimwf.loftcoin.data.CoinsRepo;
 import com.akchimwf.loftcoin.data.Currency;
 import com.akchimwf.loftcoin.data.CurrencyRepo;
 import com.akchimwf.loftcoin.data.SortBy;
+import com.akchimwf.loftcoin.util.RxSchedulers;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,6 +27,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.Subject;
 import timber.log.Timber;
 
 /*ViewModel is a class that is responsible for preparing and managing the data for an Activity or a Fragment.
@@ -35,114 +41,98 @@ It should never access your view hierarchy or hold a reference back to the Activ
 @Singleton
 public class RatesViewModel extends ViewModel {
 
-    /*Live data to store list of coins*/
-    private final LiveData<List<Coin>> coins;
+    /*Observable to store list of coins*/
+    private final Observable<List<Coin>> coins;
 
-    private final MutableLiveData<Boolean> isRefreshing = new MutableLiveData<>();
+    /*Subject is analog of MutableLiveData*/
+    /*Subject that emits the most recent item it has observed and all subsequent observed items to each subscribed Observer.*/
+    private final Subject<Boolean> isRefreshing = BehaviorSubject.create();
 
+    /*split pullToRefresh to 2 fields - pullToRefresh(Subject) and forceUpdate(AtomicBoolean). Not need everytime to recreate AtomicBoolean object in refresh()*/
+    /*data type inside Subject is not important*/
+    final Subject<Class<?>> pullToRefresh = BehaviorSubject.createDefault(Void.TYPE);  //defaultValue - the item that will be emitted first to any Observer as long as the BehaviorSubject has not yet observed any items from its source Observable
     /*A boolean value that may be updated atomically*/
     /*An AtomicBoolean is used in applications such as atomically updated flags, and cannot be used as a replacement for a Boolean.*/
     /*This flag is responsible for fetching data either from server or db*/
     /*Atomic - thread safety*/
-    final MutableLiveData<AtomicBoolean> forceRefresh = new MutableLiveData<>(new AtomicBoolean(true));
+    final AtomicBoolean forceUpdate = new AtomicBoolean();
 
-    private final MutableLiveData<SortBy> sortBy = new MutableLiveData<>(SortBy.RANK);
+    private final Subject<SortBy> sortBy = BehaviorSubject.createDefault(SortBy.RANK);
 
     private int sortingIndex = 1; //PRICE by default
+
+    private RxSchedulers schedulers;
 
     // AppComponent(BaseComponent) -> MainUIComponent -> Fragment(BaseComponent) -> RatesComponent -> RatesViewModel()
     /*this is the whole chain how we push coinsRepo from BaseComponent to RatesViewModel*/
     @Inject
-    public RatesViewModel(CoinsRepo coinsRepo, CurrencyRepo currencyRepo) {
-        /*LiveData with Transformations is a kind of conveyor*/
-        /*Transformations.map - when transform function returns Object*/
-        /*Transformations.switchMap - when transform function returns LiveData */
+    public RatesViewModel(CoinsRepo coinsRepo, CurrencyRepo currencyRepo, RxSchedulers schedulers) {
+        this.schedulers = schedulers;
+        /*Kind of conveyor*/
+        /*map - when function returns Observable*/
+        /*switchMap - when function returns ObservableSource */
 
-        /*This is kind of reactive with LiveData*/
-        /*(T|F) -> forceRefresh -> currency -> sortBy -> query -> listings*/
+        /*(T|F) -> pullToRefresh -> currency -> sortBy -> query -> listings*/
 
-        /*create(transform) Query from forceRefresh and Currency*/
+        /*create Query from forceRefresh and Currency first*/
         /*forceRefresh is a upstream, start of a conveyor*/
         /*when forceRefresh or Currency changed -> Query changed automatically*/
         /*Currency is a downstream to forceRefresh, so changing Currency will change Query, but not forceRefresh*/
-        final LiveData<CoinsRepo.Query> query = Transformations.switchMap(forceRefresh, r -> {
 
-            /*nested transformations, when working with LiveData in a react way*/
-            return Transformations.switchMap(currencyRepo.currency(), c -> {
+        this.coins = pullToRefresh  //initial trigger
+                .map(pullToRefresh -> CoinsRepo.Query.builder())             //returns Observable<CoinsRepo.Query.Builder>
 
-                /*when change currency forceRefresh should be always true-> get data from server*/
-                r.set(true);
+                .switchMap(builder -> currencyRepo.currency()                //get currency and place to query
+                        .map(currency -> builder.currency(currency.code()))  //nested map, only happen when upstream executed
+                )
 
-                isRefreshing.postValue(true);
+                /*when change currency forceUpdate should be always true-> get data from server*/
+                .doOnNext(builder -> forceUpdate.set(true))   //side effect to do something with stream, builder stays untouched
 
-                /*nested transformations, when working with LiveData in a react way*/
-                return Transformations.map(sortBy, s -> {
+                .doOnNext(builder -> isRefreshing.onNext(true))
 
-                    /*Query depends of variables: r, c and s*/
-                    return CoinsRepo.Query.builder()
+                .switchMap(builder -> sortBy
+                        .map(srtBy -> builder.sortBy(srtBy))  //same for sortBy, builder here already modified by currency
+                )
 
-                            /*Atomically sets to the given value and returns the previous value*/
-                            /*we need it here as don't need to get data from server(need to get from db) when sorting -> set r to false*/
-                            /*first run r==true, but second run if only sorting was called r==false*/
-                            .forceUpdate(r.getAndSet(false))
-                            .sortBy(s)
+                /*Atomically sets to the given value and returns the previous value*/
+                /*we need it here as don't need to get data from server(need to get from db) when sorting -> set forceUpdate to false*/
+                /*first run forceUpdate==true, but second run if only sorting was called forceUpdate==false*/
+                .map(builder -> builder.forceUpdate(forceUpdate.getAndSet(false)))  //map as forceUpdate is not a stream, so transform one result ot another
 
-                            .currency(c.code())
-                            .build();
-                });
+                .map(builder -> builder.build())                    //finally build query
 
-            });
+                .switchMap(query -> coinsRepo.listings(query))      //get coins from repo with built query
 
-        });
-
-        /*second step of a conveyor*/
-        /*create(transform) List<Coin> from Query*/
-        /*when Query changed -> List<Coin> changed automatically*/
-        final LiveData<List<Coin>> coins = Transformations.switchMap(query, new Function<CoinsRepo.Query, LiveData<List<Coin>>>() {
-            @Override
-            public LiveData<List<Coin>> apply(CoinsRepo.Query q) {
-                return coinsRepo.listings(q);
-            }
-        });
-
-        /*RatesFragment is subscribed on this.coins*/
-
-        /*empty Transformation=empty step of conveyor, -> place isRefreshing(false) here */
-        this.coins = Transformations.map(coins, new Function<List<Coin>, List<Coin>>() {
-            @Override
-            public List<Coin> apply(List<Coin> input) {
-                /*previous transformation could take time,
-                so we add empty transformation to set isRefreshing=false here, just after previous transformation completed */
-                isRefreshing.postValue(false);
-                /*no any things to do here*/
-                return input;
-            }
-        });
+                .doOnEach(listNotification -> isRefreshing.onNext(false))  //in any case hide refresher (could be error), Notification - object with information about the stream: finished, error, ...
+        ;
     }
 
     /*push data outside ViewModel*/
     @NonNull
-    LiveData<List<Coin>> coins() {
-        return coins;
+    Observable<List<Coin>> coins() {
+        /* coinsRepo.listings executing on the IO thread, but we need to observe data on main thread*/
+        /*Modifies an ObservableSource to perform its emissions and notifications on a specified Scheduler,*/
+        return coins.observeOn(schedulers.main());
     }
 
     @NonNull
-    LiveData<Boolean> isRefreshing() {
-        return isRefreshing;
+    Observable<Boolean> isRefreshing() {
+        return isRefreshing.observeOn(schedulers.main());
     }
 
     final void refresh() {
-        forceRefresh.postValue(new AtomicBoolean(true));
+        pullToRefresh.onNext(Void.TYPE);  //this is just a trigger to refresh, so everytime put here same Void.TYPE when needs to refresh
     }
 
     /*get next order index*/
-    /*% length -> normal safe way to get all indexes without out of bounds error*/
-    final void switchSortingOrder(){
+    final void switchSortingOrder() {
+        /*% length -> normal safe way to get all indexes without out of bounds error*/
         //0 % 2 = 0
         //1 % 2 = 1
         //2 % 2 = 0
         // 0 1 0 1
         /*sortingIndex++ to get next order index*/
-        sortBy.postValue(SortBy.values()[sortingIndex++ % SortBy.values().length]);
+        sortBy.onNext(SortBy.values()[sortingIndex++ % SortBy.values().length]);   //trigger to sort
     }
 }

@@ -9,6 +9,8 @@ import androidx.room.Query;
 
 import java.util.List;
 
+import io.reactivex.Observable;
+
 /*Marks the class as a Data Access Object.
 Data Access Objects are the main classes where you define your database interactions. They can include a variety of query methods.
 The class marked with @Dao should either be an interface or an abstract class.
@@ -21,15 +23,15 @@ abstract class CoinsDao {
     This query is verified at compile time by Room to ensure that it compiles fine against the database.*/
     @Query("select * from RoomCoin")
     /*Room could provide LiveData and change it according to DB changing*/
-    abstract LiveData<List<RoomCoin>> fetchAll();
+    abstract Observable<List<RoomCoin>> fetchAll();
 
     @Query("select * from RoomCoin order by price DESC")
     /*Room could provide LiveData and change it according to DB changing*/
-    abstract LiveData<List<RoomCoin>> fetchAllSortByPrice();
+    abstract Observable<List<RoomCoin>> fetchAllSortByPrice();
 
     @Query("select * from RoomCoin order by rank ASC")
     /*Room could provide LiveData and change it according to DB changing*/
-    abstract LiveData<List<RoomCoin>> fetchAllSortByRank();
+    abstract Observable<List<RoomCoin>> fetchAllSortByRank();
 
     /*Blocking UI method -> @WorkerThread: we annotate a method or class with this to indicate it MUST be executed on a different thread than Main/UI Thread*/
     @WorkerThread

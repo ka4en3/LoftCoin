@@ -1,23 +1,17 @@
 package com.akchimwf.loftcoin.data;
 
 import androidx.annotation.NonNull;
-import androidx.arch.core.util.Function;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
 
-import java.io.IOException;
+import com.akchimwf.loftcoin.util.RxSchedulers;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import okhttp3.ResponseBody;
-import retrofit2.Response;
-import timber.log.Timber;
+import io.reactivex.Observable;
 
 /*implementation of CoinsRepo interface according to CoinMarketCap coins list*/
 /*this is Data Layer according to Clean Architecture*/
@@ -28,103 +22,47 @@ class CmcCoinsRepo implements CoinsRepo {
 
     private final CmcAPI api;
     private final LoftDatabase db;
-    private final ExecutorService executor;  // CmcCoinsRepo can manage threads
+    private RxSchedulers schedulers;
 
     @Inject
         /*Not public as use Dagger and DI*/
-    CmcCoinsRepo(CmcAPI api, LoftDatabase db, ExecutorService executor) {
+    CmcCoinsRepo(CmcAPI api, LoftDatabase db, RxSchedulers schedulers) {
         this.api = api;
         this.db = db;
-        this.executor = executor;
+        this.schedulers = schedulers;
     }
-
-/*  //old method realization
-    @NonNull
-    @Override
-    public List<? extends Coin> listings(@NonNull String currency) throws IOException {
-        final Response<Listings> response = api.listings(currency).execute();
-
-        if (response.isSuccessful()) {
-            final Listings listings = response.body();
-            if (listings != null) {
-                return listings.data();
-            }
-        } else {
-            final ResponseBody responseBody = response.errorBody();
-            if (responseBody != null) {
-                throw new IOException(responseBody.string());
-            }
-        }
-        //in other cases return empty list
-        return Collections.emptyList();
-    }*/
 
     @NonNull
     @Override
-    public LiveData<List<Coin>> listings(@NonNull Query query) {
-        fetchFromNetworkIfNecessary(query);
-        return fetchFromDB(query);
+    public Observable<List<Coin>> listings(@NonNull Query query) {
+        return Observable  //create Observable from callback
+                .fromCallable(() -> query.forceUpdate() || db.coins().coinsCount() == 0)  //result: Observable<Boolean>
+                .switchMap(f -> f ? api.listings(query.currency()) : Observable.empty())  //api.listings returns Observable, result: Observable<Listings>
+                .map(listings -> mapToRoomCoins(query, listings.data()))                  //this code executed only if Observable is not empty, result: Observable<List<RoomCoin>>
+                .doOnNext(coins -> db.coins().insert(coins))                              //doOnNext - side effect, not a Map(=not make any transformation). coins=List<RoomCoin>
+                .switchMap(coins -> fetchFromDB(query))                                   //as previous step didn't do transformation, coins is the same. No result here as we only fetching from db
+                .switchIfEmpty(fetchFromDB(query))                                        //this step executed only if step2 returns Observable.empty(), and all further steps will executed too
+                .<List<Coin>>map(coins -> new ArrayList<>(coins))                         //result: Observable<List<Coin>>. As this is the last we should define return type to <List<Coin>>, only then Scheduler can be assigned
+                /*Asynchronously subscribes Observers to this ObservableSource on the specified Scheduler*/
+                .subscribeOn(schedulers.io())                                             //RxJava has predefined schedulers, this one will execute all chain on the IO thread, when subscription happened
+                ;
     }
 
-    private LiveData<List<Coin>> fetchFromDB(Query query) {
-        /*LiveData for RoomCoins*/
-        LiveData<List<RoomCoin>> coins;
-
-        /*fetching from db according to query.sortBy()*/
+    private Observable<List<RoomCoin>> fetchFromDB(Query query) {
+        //fetching from db according to query.sortBy()
         if (query.sortBy() == SortBy.PRICE) {
-            coins = db.coins().fetchAllSortByPrice();
+            return db.coins().fetchAllSortByPrice();
         } else {
-            coins = db.coins().fetchAllSortByRank();
+            return db.coins().fetchAllSortByRank();
         }
 
-        /*Transformation method for LiveData.*/
-        /*transformation of LiveData from List<RoomCoin> to List<Coin>*/
-        /*map - Returns a LiveData mapped from the input source LiveData by applying mapFunction to each value set on source.*/
-        return Transformations.map(coins, new Function<List<RoomCoin>, List<Coin>>() {
-            @Override
-            /*input parameter(coins) should have type of fetchAll() function return*/
-            public List<Coin> apply(List<RoomCoin> coins) {
-                /*trick to transform List<RoomCoin> to List<Coin>*/
-                return new ArrayList<>(coins);
-            }
-        });
     }
 
-    /*method if necessary get data from server and save to db*/
-    private void fetchFromNetworkIfNecessary(Query query) {
-        /*as request to network are asynchronous -> use own executor*/
-        /*Manage threads here as coinsCount() annotated with @WorkerThread*/
-        executor.submit(() -> {
-            /*if forceUpdate() == true, or RoomCoin table has no records */
-            if (query.forceUpdate() || db.coins().coinsCount() == 0) {
-                try {
-                    final Response<Listings> response = api.listings(query.currency()).execute();
-                    if (response.isSuccessful()) {
-                        final Listings listings = response.body();
-                        if (listings != null) {
-                            /*save data from network to DB*/
-                            /*on separate thread as this method called from asynchronous request*/
-                            saveCoinsIntoDB(query, listings.data());
-                        }
-                    } else {
-                        final ResponseBody responseBody = response.errorBody();
-                        if (responseBody != null) {
-                            throw new IOException(responseBody.string());
-                        }
-                    }
-                } catch (IOException e) {
-                    Timber.e(e);
-                }
-            }
-        });
-    }
-
-    /*on separate thread as this method called from asynchronous request*/
-    private void saveCoinsIntoDB(Query query, List<? extends Coin> cmcCoins) {
+    private List<RoomCoin> mapToRoomCoins(Query query, List<? extends Coin> data) {
         /*can't set List<RoomCoin> roomCoins = new ArrayList<>(cmcCoins) directly*/
-        List<RoomCoin> roomCoins = new ArrayList<>(cmcCoins.size());
+        List<RoomCoin> roomCoins = new ArrayList<>(data.size());
         /*manually creating List<RoomCoin>*/
-        for (Coin coin : cmcCoins) {
+        for (Coin coin : data) {
             roomCoins.add(RoomCoin.create(
                     coin.name(),
                     coin.symbol(),
@@ -135,6 +73,6 @@ class CmcCoinsRepo implements CoinsRepo {
                     coin.id()
             ));
         }
-        db.coins().insert(roomCoins);
+        return roomCoins;
     }
 }

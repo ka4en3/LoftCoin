@@ -18,6 +18,11 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.functions.Cancellable;
+
 @Singleton
         /*Not public as use Dagger and DI*/
 class CurrencyRepoImpl implements CurrencyRepo {
@@ -40,13 +45,6 @@ class CurrencyRepoImpl implements CurrencyRepo {
         availableCurrencies.put("RUB", Currency.create("₽", "RUB", context.getString(R.string.rub)));
     }
 
-    /*  old implementation
-    @NonNull
-    @Override
-    public LiveData<List<Currency>> availableCurrencies() {
-        return new AllCurrenciesLiveDate(context);
-    }*/
-
     /*get available currencies as a live data*/
     @NonNull
     @Override
@@ -57,11 +55,39 @@ class CurrencyRepoImpl implements CurrencyRepo {
         return liveData;
     }
 
-    /*get the current(stored in prefs) currency as a live data*/
+    /*get the current(stored in prefs) currency as a Observable*/
     @NonNull
     @Override
-    public LiveData<Currency> currency() {
-        return new CurrencyLiveData();
+    public Observable<Currency> currency() {
+        return Observable.create(new ObservableOnSubscribe<Currency>() {  //create Observer and set ObservableOnSubscribe listener
+            @Override
+            public void subscribe(ObservableEmitter<Currency> emitter) throws Exception {
+
+                /*create listener*/
+                SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+                    @Override
+                    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                        if (!emitter.isDisposed()) {  //if emitter is still active
+                            emitter.onNext(availableCurrencies.get(prefs.getString(key, "USD")));
+                        }
+                    }
+                };
+
+                /*register listener*/
+                prefs.registerOnSharedPreferenceChangeListener(listener);
+
+                /*unregister listener*/
+                emitter.setCancellable(new Cancellable() {   //if all Observers unsubscribed
+                    @Override
+                    public void cancel() throws Exception {
+                        prefs.unregisterOnSharedPreferenceChangeListener(listener);
+                    }
+                });
+
+                /*default data pushed to emitter*/
+                emitter.onNext(availableCurrencies.get(prefs.getString(KEY_CURRENCY, "USD")));
+            }
+        });
     }
 
     /*save chosen currency to prefs*/
@@ -69,55 +95,4 @@ class CurrencyRepoImpl implements CurrencyRepo {
     public void updateCurrency(@NonNull Currency currency) {
         prefs.edit().putString(KEY_CURRENCY, currency.code()).apply();
     }
-
-    private class CurrencyLiveData extends LiveData<Currency> implements SharedPreferences.OnSharedPreferenceChangeListener {
-
-        /* LiveData has {@link LiveData#onActive()} and {@link LiveData#onInactive()} methods
-         * to get notified when number of active {@link Observer}s change between 0 and 1.
-         * This allows LiveData to release any heavy resources when it does not have any Observers that
-         * are actively observing.*/
-
-        @Override
-        protected void onActive() {
-            /*Registers a callback to be invoked when a change happens to a preference.*/
-            prefs.registerOnSharedPreferenceChangeListener(this);
-            setValue(availableCurrencies.get(prefs.getString(KEY_CURRENCY, "USD")));
-        }
-
-        /*called after changed fragment*/
-        @Override
-        protected void onInactive() {
-            /*Unregisters a previous callback.*/
-            prefs.unregisterOnSharedPreferenceChangeListener(this);
-        }
-
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-            setValue(availableCurrencies.get(prefs.getString(key, "USD")));
-        }
-    }
-
-    /*  old implementation
-    //this class generates a list of currencies
-    //we can do on a main thread as its only 3 currencies
-    private static class AllCurrenciesLiveDate extends LiveData<List<Currency>> {
-
-        private final Context context;
-
-        AllCurrenciesLiveDate(Context context) {
-            this.context = context;
-        }
-
-        //called when someone subscribed on this LiveData
-        @Override
-        protected void onActive() {
-            List<Currency> currencies = new ArrayList<>();
-            currencies.add(Currency.create("$", "USD", context.getString(R.string.usd)));
-            currencies.add(Currency.create("€", "EUR", context.getString(R.string.eur)));
-            currencies.add(Currency.create("₽", "RUB", context.getString(R.string.rub)));
-            //Sets the value. If there are active observers, the value will be dispatched to them.
-            setValue(currencies);  //onActive always calling on a main thread -> can use setValue
-        }
-    }
-    */
 }

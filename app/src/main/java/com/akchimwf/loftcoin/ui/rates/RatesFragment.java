@@ -31,7 +31,13 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import io.reactivex.disposables.CompositeDisposable;
+
 public class RatesFragment extends Fragment {
+
+    /*container with disposable objects - those objects which returns after subscription to RxJava stream*/
+    private final CompositeDisposable disposable = new CompositeDisposable();
+
     /*FragmentRatesBinding class comes from 'viewBinding' at build.grade*/
     private FragmentRatesBinding binding;
 
@@ -96,18 +102,12 @@ public class RatesFragment extends Fragment {
 
         binding.recycler.setHasFixedSize(true);
 
-        /*Adds the given observer to the observers list within the lifespan of the given owner. */
-        /*This is observer for LiveData. Every time LiveData.setValue or LiveData.postValue calling, onChanged will be called*/
-        /*getViewLifecycleOwner() (NOT observeForever, or NOT "this"(wrong ViewLifecycleOwner here)) - because ViewModel can live longer than Fragment, so we have to monitor lifecycle of Fragment*/
-        /*if not -> leak of binding=View could happen*/
-        /*could be replaced with lambda*/
-        viewModel.coins().observe(getViewLifecycleOwner(), new Observer<List<Coin>>() {
-            @Override
-            public void onChanged(List<Coin> coins) {
-                /*ListAdapter method -> Submits a new list to be diffed, and displayed.*/
-                adapter.submitList(coins);
-            }
-        });
+        /*subscription and listing on IO thread, but result observe on main thread*/
+        /*add returned Disposable reference to disposables list*/
+        /*adapter::submitList subscribes on this stream*/
+        disposable.add(viewModel.coins().subscribe(adapter::submitList));  //submitList - ListAdapter method -> Submits a new list to be diffed, and displayed.
+
+        disposable.add(viewModel.isRefreshing().subscribe(binding.refresher::setRefreshing));
 
         binding.recycler.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
             @Override
@@ -122,15 +122,6 @@ public class RatesFragment extends Fragment {
 
             }
         });
-
-        viewModel.isRefreshing().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean refreshing) {
-                binding.refresher.setRefreshing(refreshing);
-            }
-        });
-        /*could use also: */
-        /*viewModel.isRefreshing().observe(getViewLifecycleOwner(), binding.refresher::setRefreshing);*/
 
         binding.refresher.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -176,6 +167,11 @@ public class RatesFragment extends Fragment {
         So we keep adapter alive on the Fragment lifecycle. - PROBABLY IT'S NOT TRUE WHEN FRAGMENTS CREATING WITH NAVIGATION
         - THEY ARE CREATING EVERYTIME AGAIN*/
         binding.recycler.swapAdapter(null, false); //else GC will not collect RV
+
+        /*Atomically clears the container, then disposes all the previously contained Disposables.*/
+        /*not .dispose() as this method will destroy  CompositeDisposable -> should not happened onDestroyView*/
+        disposable.clear();  //unsubscribe all disposable objects in container
+
         super.onDestroyView();
     }
 

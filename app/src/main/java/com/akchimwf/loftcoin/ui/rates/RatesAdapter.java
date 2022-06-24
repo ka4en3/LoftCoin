@@ -110,8 +110,6 @@ class RatesAdapter extends ListAdapter<Coin, RatesAdapter.ViewHolder> {
         /*getItem -> method from ListAdapter*/
         final Coin coin = getItem(position);
 
-        //if (position % 2 == 0) holder.binding.getRoot().setBackgroundColor(R.color.dark_two);
-
         holder.binding.symbol.setText(coin.symbol());
 
         holder.binding.price.setText(priceFormatter.format(coin.currencyCode(), coin.price()));
