@@ -1,5 +1,7 @@
 package com.akchimwf.loftcoin1.util.formatter;
 
+//TODO realize one formatter interface with different methods and bind to realization
+
 import androidx.annotation.NonNull;
 
 import java.util.Locale;

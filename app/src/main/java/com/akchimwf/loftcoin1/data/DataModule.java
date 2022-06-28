@@ -84,7 +84,10 @@ public abstract class DataModule {
             /*Creates a RoomDatabase.Builder for an in memory database.
             Information stored in an in memory database disappears when the process is killed.
             Once a database is built, you should keep a reference to it and re-use it.*/
-            return Room.inMemoryDatabaseBuilder(context, LoftDatabase.class).build();
+
+            return Room.databaseBuilder(context, LoftDatabase.class, "loftcoin.db").build();
+            //return Room.inMemoryDatabaseBuilder(context, LoftDatabase.class).build();
+
         }else{
             /*Creates a RoomDatabase.Builder for a persistent database.
             Once a database is built, you should keep a reference to it and re-use it.*/
@@ -101,4 +104,7 @@ public abstract class DataModule {
 
     @Binds
     abstract CurrencyRepo currencyRepo(CurrencyRepoImpl impl);
+
+    @Binds
+    abstract WalletsRepo walletsRepo(WalletsRepoImpl impl);
 }

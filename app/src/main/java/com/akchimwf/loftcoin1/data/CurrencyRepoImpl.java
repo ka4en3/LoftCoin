@@ -59,6 +59,7 @@ class CurrencyRepoImpl implements CurrencyRepo {
     @NonNull
     @Override
     public Observable<Currency> currency() {
+        /*Provides an API (via a cold Observable) that bridges the reactive world with the callback-style world.*/
         return Observable.create(new ObservableOnSubscribe<Currency>() {  //create Observer and set ObservableOnSubscribe listener
             @Override
             public void subscribe(ObservableEmitter<Currency> emitter) throws Exception {

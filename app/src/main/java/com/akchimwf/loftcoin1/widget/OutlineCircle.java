@@ -1,4 +1,4 @@
-package com.akchimwf.loftcoin1.util;
+package com.akchimwf.loftcoin1.widget;
 
 import android.graphics.Outline;
 import android.view.View;

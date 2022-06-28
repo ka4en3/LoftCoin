@@ -21,6 +21,9 @@ import com.akchimwf.loftcoin1.BaseComponent;
 import com.akchimwf.loftcoin1.R;
 import com.akchimwf.loftcoin1.databinding.FragmentRatesBinding;
 import com.akchimwf.loftcoin1.databinding.LiRatesBinding;
+import com.google.android.material.snackbar.Snackbar;
+
+import java.util.Objects;
 
 import javax.inject.Inject;
 
@@ -39,6 +42,7 @@ public class RatesFragment extends Fragment {
     private RatesAdapter adapter;
 
     private RatesViewModel viewModel;
+
     private int bgCounter = 0;
 
     @Inject
@@ -55,13 +59,12 @@ public class RatesFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         /*when closing Fragment, it stays alive, only associated View is destroyed.
-        So we keep adapter alive on the Fragment lifecycle. - PROBABLY IT'S NOT TRUE WHEN FRAGMENTS CREATING WITH NAVIGATION
-        - THEY ARE CREATING EVERYTIME AGAIN*/
-//        adapter = new RatesAdapter(new PriceFormatter(), new PercentFormatter());
+        So we keep adapter alive on the Fragment lifecycle. - PROBABLY IT'S NOT TRUE WHEN FRAGMENTS CREATING WITH NAVIGATION -> THEY ARE CREATING EVERYTIME AGAIN*/
         adapter = component.ratesAdapter();
 
         /*Creates ViewModelProvider. This will create ViewModels and retain them in a store of the given ViewModelStoreOwner.*/
         /*get -> Returns an existing ViewModel or creates a new one in the scope (usually, a fragment or an activity), associated with this ViewModelProvider.*/
+        /*owner - a ViewModelStoreOwner whose ViewModelStore will be used to retain ViewModels. Use Fragment itself fot store ViewModel*/
         viewModel = new ViewModelProvider(this, component.viewModelFactory()).get(RatesViewModel.class);
     }
 
@@ -95,26 +98,18 @@ public class RatesFragment extends Fragment {
 
         binding.recycler.setHasFixedSize(true);
 
-        /*subscription and listing on IO thread, but result observe on main thread*/
+        /*subscription and listing on IO thread, but result observes on main thread*/
         /*add returned Disposable reference to disposables list*/
         /*adapter::submitList subscribes on this stream*/
         disposable.add(viewModel.coins().subscribe(adapter::submitList));  //submitList - ListAdapter method -> Submits a new list to be diffed, and displayed.
 
+        disposable.add(viewModel.onError().subscribe(error -> {
+            Snackbar.make(view, Objects.requireNonNull(error.getMessage(), "No error message! strange..."), Snackbar.LENGTH_INDEFINITE)
+                    .setAction("Retry", v -> viewModel.retry())
+                    .show();
+        }));
+
         disposable.add(viewModel.isRefreshing().subscribe(binding.refresher::setRefreshing));
-
-        binding.recycler.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
-            @Override
-            public void onChildViewAttachedToWindow(@NonNull View view) {
-                if (bgCounter++ % 2 == 0)
-                    view.setBackgroundColor(getResources().getColor(R.color.dark_two));
-                else view.setBackgroundColor(getResources().getColor(R.color.dark_six));
-            }
-
-            @Override
-            public void onChildViewDetachedFromWindow(@NonNull View view) {
-
-            }
-        });
 
         binding.refresher.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -157,8 +152,8 @@ public class RatesFragment extends Fragment {
     @Override
     public void onDestroyView() {
         /*when closing Fragment, it stays alive, only associated View is destroyed.
-        So we keep adapter alive on the Fragment lifecycle. - PROBABLY IT'S NOT TRUE WHEN FRAGMENTS CREATING WITH NAVIGATION
-        - THEY ARE CREATING EVERYTIME AGAIN*/
+        So we keep adapter alive on the Fragment lifecycle. - PROBABLY IT'S NOT TRUE WHEN FRAGMENTS CREATING WITH NAVIGATION -> THEY ARE CREATING EVERYTIME AGAIN*/
+        /*onDetachedFromRecyclerView called (logics there if necessary)*/
         binding.recycler.swapAdapter(null, false); //else GC will not collect RV
 
         /*Atomically clears the container, then disposes all the previously contained Disposables.*/

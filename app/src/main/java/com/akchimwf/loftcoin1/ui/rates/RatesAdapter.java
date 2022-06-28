@@ -19,7 +19,7 @@ import com.akchimwf.loftcoin1.R;
 import com.akchimwf.loftcoin1.data.Coin;
 import com.akchimwf.loftcoin1.databinding.LiRatesBinding;
 import com.akchimwf.loftcoin1.util.ImageLoader;
-import com.akchimwf.loftcoin1.util.OutlineCircle;
+import com.akchimwf.loftcoin1.widget.OutlineCircle;
 import com.akchimwf.loftcoin1.util.formatter.PercentFormatter;
 import com.akchimwf.loftcoin1.util.formatter.PriceFormatter;
 
@@ -122,6 +122,13 @@ class RatesAdapter extends ListAdapter<Coin, RatesAdapter.ViewHolder> {
         imageLoader
                 .load(BuildConfig.IMG_ENDPOINT + coin.id() + ".png")
                 .into(holder.binding.logo);
+
+        /*color lines in RV different colors*/
+        /*getItemViewType been override!*/
+        if (position % 2 == 0)
+            holder.binding.getRoot().setBackgroundColor(holder.binding.getRoot().getContext().getColor(R.color.dark_two));
+        else
+            holder.binding.getRoot().setBackgroundColor(holder.binding.getRoot().getContext().getColor(R.color.dark_six));
     }
 
     /*called when payloads present(means data(price, change24) from server changed),
@@ -145,6 +152,17 @@ class RatesAdapter extends ListAdapter<Coin, RatesAdapter.ViewHolder> {
                 holder.binding.change.setTextColor(colorNegative);
             }
         }
+    }
+
+    /*Return the view type of the item at position for the purposes of view recycling.
+    The default implementation of this method returns 0, making the assumption of a single view type for the adapter. Unlike ListView adapters, types need not be contiguous. Consider using id resources to uniquely identify item view types.
+    Params:
+    position – position to query
+    Returns:
+    integer value identifying the type of the view needed to represent the item at position. Type codes need not be contiguous.*/
+    @Override
+    public int getItemViewType(int position) {
+        return (position % 2);
     }
 
     @Override

@@ -13,5 +13,5 @@ abstract class ConverterModule {
     @Binds
     @IntoMap
     @ClassKey(ConverterViewModel.class)
-    abstract ViewModel viewModel(ConverterViewModel impl);
+    abstract ViewModel converterViewModel(ConverterViewModel impl);
 }

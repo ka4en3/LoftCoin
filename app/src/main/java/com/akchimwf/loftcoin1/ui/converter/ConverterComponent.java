@@ -21,4 +21,7 @@ import dagger.Component;
 public abstract class ConverterComponent {
     /*to call this method as component.viewModelFactory()*/
     abstract ViewModelProvider.Factory viewModelFactory();
+
+    /*to call this method as component.coinsSheetAdapter()*/
+    abstract CoinsSheetAdapter coinsSheetAdapter();
 }

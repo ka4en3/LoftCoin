@@ -9,6 +9,7 @@ import com.akchimwf.loftcoin1.data.CurrencyRepo;
 import com.akchimwf.loftcoin1.data.SortBy;
 import com.akchimwf.loftcoin1.util.RxSchedulers;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -17,6 +18,7 @@ import javax.inject.Singleton;
 
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
+import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.Subject;
 
 /*ViewModel is a class that is responsible for preparing and managing the data for an Activity or a Fragment.
@@ -24,13 +26,18 @@ It also handles the communication of the Activity / Fragment with the rest of th
 /*ViewModel's only responsibility is to manage the data for the UI.
 It should never access your view hierarchy or hold a reference back to the Activity or the Fragment.*/
 @Singleton
-public class RatesViewModel extends ViewModel {
+class RatesViewModel extends ViewModel {
 
     /*Observable to store list of coins*/
     private final Observable<List<Coin>> coins;
 
     /*Subject is analog of MutableLiveData*/
-    /*Subject that emits the most recent item it has observed and all subsequent observed items to each subscribed Observer.*/
+    /*Subjects are an extension of Observable while also implementing the Observer interface.
+    The idea may seem strange, but in certain cases they make some things much easier.
+    They can receive event messages (as an observer) and report them to their subscribers (as an observable).
+    This makes them an ideal starting point for getting started with Rx code: when you have data coming from outside,
+    you can pass it to a Subject, thus turning it into an observable.*/
+    /*BehaviorSubject - Subject that emits the most recent item it has observed and all subsequent observed items to each subscribed Observer.*/
     private final Subject<Boolean> isRefreshing = BehaviorSubject.create();
 
     /*split pullToRefresh to 2 fields - pullToRefresh(Subject) and forceUpdate(AtomicBoolean). Not need everytime to recreate AtomicBoolean object in refresh()*/
@@ -46,13 +53,23 @@ public class RatesViewModel extends ViewModel {
 
     private int sortingIndex = 1; //PRICE by default
 
+    private CoinsRepo coinsRepo;
+    private CurrencyRepo currencyRepo;
     private RxSchedulers schedulers;
+
+    /*ERROR HANDLING*/
+    /*PublishSubject: A Subject that emits (multicasts) items to currently subscribed Observers and terminal events to current or late Observers.*/
+    /*PublishSubject: in order to emmit error only once, second subscription to this Subject gives nothing. One-shot action.*/
+    private final Subject<Throwable> error = PublishSubject.create();
+    private final Subject<Class<?>> onRetry = PublishSubject.create();
 
     // AppComponent(BaseComponent) -> MainUIComponent -> Fragment(BaseComponent) -> RatesComponent -> RatesViewModel()
     /*this is the whole chain how we push coinsRepo from BaseComponent to RatesViewModel*/
     @Inject
-    public RatesViewModel(CoinsRepo coinsRepo, CurrencyRepo currencyRepo, RxSchedulers schedulers) {
+    RatesViewModel(CoinsRepo coinsRepo, CurrencyRepo currencyRepo, RxSchedulers schedulers) {
+
         this.schedulers = schedulers;
+
         /*Kind of conveyor*/
         /*map - when function returns Observable*/
         /*switchMap - when function returns ObservableSource */
@@ -89,7 +106,15 @@ public class RatesViewModel extends ViewModel {
 
                 .switchMap(query -> coinsRepo.listings(query))      //get coins from repo with built query
 
+                /*Error happened means terminating stream -> need to handle errors properly*/
+                .doOnError(throwable -> error.onNext(throwable))    //catch error in ViewModel
+                .retryWhen(throwableObservable -> onRetry)          //freeze stream until onRetry has no data. Data will come after press button Retry in this case.
+//                .onErrorReturnItem(Collections.emptyList())       //after this step error is properly handled->can continue stream->empty list
+
                 .doOnEach(listNotification -> isRefreshing.onNext(false))  //in any case hide refresher (could be error), Notification - object with information about the stream: finished, error, ...
+
+                .replay(1)
+                .autoConnect()
         ;
     }
 
@@ -106,6 +131,11 @@ public class RatesViewModel extends ViewModel {
         return isRefreshing.observeOn(schedulers.main());
     }
 
+    @NonNull
+    Observable<Throwable> onError() {
+        return error.observeOn(schedulers.main());
+    }
+
     final void refresh() {
         pullToRefresh.onNext(Void.TYPE);  //this is just a trigger to refresh, so everytime put here same Void.TYPE when needs to refresh
     }
@@ -119,5 +149,9 @@ public class RatesViewModel extends ViewModel {
         // 0 1 0 1
         /*sortingIndex++ to get next order index*/
         sortBy.onNext(SortBy.values()[sortingIndex++ % SortBy.values().length]);   //trigger to sort
+    }
+
+    void retry() {
+        onRetry.onNext(Void.class);
     }
 }

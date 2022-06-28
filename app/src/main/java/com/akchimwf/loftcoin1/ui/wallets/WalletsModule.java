@@ -13,5 +13,5 @@ abstract class WalletsModule {
     @Binds
     @IntoMap
     @ClassKey(WalletsViewModel.class)
-    abstract ViewModel viewModel(WalletsViewModel impl);
+    abstract ViewModel walletsViewModel(WalletsViewModel impl);
 }

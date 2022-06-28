@@ -16,7 +16,7 @@ import com.akchimwf.loftcoin1.BaseComponent;
 import com.akchimwf.loftcoin1.R;
 import com.akchimwf.loftcoin1.data.Currency;
 import com.akchimwf.loftcoin1.databinding.DialogCurrencyBinding;
-import com.akchimwf.loftcoin1.util.OnItemClick;
+import com.akchimwf.loftcoin1.widget.OnItemClick;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;

@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SnapHelper;
 
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -18,13 +19,24 @@ import android.view.ViewGroup;
 import com.akchimwf.loftcoin1.BaseComponent;
 import com.akchimwf.loftcoin1.R;
 import com.akchimwf.loftcoin1.databinding.FragmentWalletsBinding;
+import com.akchimwf.loftcoin1.databinding.LiWalletBinding;
+import com.akchimwf.loftcoin1.util.RxSchedulers;
+import com.akchimwf.loftcoin1.widget.RxRecycleView;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
+import io.reactivex.disposables.CompositeDisposable;
+import timber.log.Timber;
+
 public class WalletsFragment extends Fragment {
 
+    /*container with disposable objects - those objects which returns after subscription to RxJava stream*/
+    private final CompositeDisposable disposable = new CompositeDisposable();
+
     /*PagerSnapHelper helps to show RecycleView as ViewPager, we don't use ViewPager here*/
-    private PagerSnapHelper walletsSnapHelper;
+    private SnapHelper walletsSnapHelper;
 
     /*FragmentConverterBinding class comes from 'viewBinding' at build.grade*/
     private FragmentWalletsBinding binding;
@@ -32,6 +44,13 @@ public class WalletsFragment extends Fragment {
     private final WalletsComponent component;
 
     private WalletsViewModel viewModel;
+
+    private WalletsAdapter adapter;
+    private TransactionsAdapter transactionAdapter;
+
+    private String activeView;
+
+    private CarouselScroller carouselScroller;
 
     @Inject
     public WalletsFragment(BaseComponent baseComponent) {
@@ -46,8 +65,14 @@ public class WalletsFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        /*when closing Fragment, it stays alive, only associated View is destroyed.
+        So we keep adapter alive on the Fragment lifecycle. - PROBABLY IT'S NOT TRUE WHEN FRAGMENTS CREATING WITH NAVIGATION -> THEY ARE CREATING EVERYTIME AGAIN*/
+        adapter = component.walletsAdapter();
+        transactionAdapter = component.transactionsAdapter();
+
         /*Creates ViewModelProvider. This will create ViewModels and retain them in a store of the given ViewModelStoreOwner.*/
         /*get -> Returns an existing ViewModel or creates a new one in the scope (usually, a fragment or an activity), associated with this ViewModelProvider.*/
+        /*owner - a ViewModelStoreOwner whose ViewModelStore will be used to retain ViewModels. Use Fragment itself fot store ViewModel*/
         viewModel = new ViewModelProvider(this, component.viewModelFactory()).get(WalletsViewModel.class);
     }
 
@@ -64,6 +89,8 @@ public class WalletsFragment extends Fragment {
 
         /*don't inflate here, as we already inflated View in onCreateView. just bind View to FragmentWalletsBinding*/
         binding = FragmentWalletsBinding.bind(view);
+
+        /*WALLETS*/
 
         walletsSnapHelper = new PagerSnapHelper();
         walletsSnapHelper.attachToRecyclerView(binding.recycler);
@@ -82,20 +109,110 @@ public class WalletsFragment extends Fragment {
         binding.recycler.setClipToPadding(false);
 
         binding.recycler.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
-        binding.recycler.setAdapter(new WalletsAdapter());
-        binding.recycler.addOnScrollListener(new CarouselScroller());
 
-        binding.recycler.setVisibility(View.VISIBLE);
-        binding.walletCard.setVisibility(View.GONE);
+        carouselScroller = new CarouselScroller(activeView);
+        /*change scale of views onScroll*/
+        binding.recycler.addOnScrollListener(carouselScroller);
+        /*change scale of views onChildViewAttachedToWindow (first start)*/
+        binding.recycler.addOnChildAttachStateChangeListener(carouselScroller);
+
+        /*subscribing on a stream triggered by changing active wallet (=snap)*/
+        disposable.add(RxRecycleView.onSnap(binding.recycler, walletsSnapHelper).subscribe(position -> {
+            viewModel.changeWallet(position);
+        }));
+
+        binding.recycler.swapAdapter(adapter, false);
+
+/*        binding.walletCard.setVisibility(View.GONE);
+        binding.recycler.setVisibility(View.VISIBLE);*/
+
+        /*result observes on main thread*/
+        /*add returned Disposable reference to disposables list*/
+        /*adapter::submitList subscribing on this stream, list(List<Wallet>) - data, provided for subscription from Observable)*/
+        disposable.add(viewModel.wallets().subscribe(list -> {
+            adapter.submitList(list); //submitList - ListAdapter method -> Submits a new list to be diffed, and displayed (List<Wallet>)
+//            Timber.d("wallets_fragment: %s", list.get(0).coin().currencyCode());
+
+        }));
+
+        /*transform List<Wallet> to List<Wallet>.isEmpty to check if there any wallet present in Firestore*/
+        disposable.add(viewModel.wallets().map(wallets -> wallets.isEmpty()).subscribe(isEmpty -> {
+
+            /*subscribing on this stream, isEmpty(Boolean) - data, provided for subscription from Observable)*/
+
+            /*if no wallets -> show empty wallet card*/
+            binding.walletCard.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+            binding.recycler.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+
+//            Timber.d("wallets_fragment: %s", isEmpty);
+        }));
+
+        /*TRANSACTIONS*/
+
+        binding.transactions.setLayoutManager(new LinearLayoutManager(view.getContext()));
+        binding.transactions.setAdapter(transactionAdapter);
+        binding.transactions.setHasFixedSize(true);
+        binding.transactions.setVisibility(View.VISIBLE);
+
+        /*result observes on main thread*/
+        /*add returned Disposable reference to disposables list*/
+        /*adapter::submitList subscribing on this stream, list(List<Transaction>) - data, provided for subscription from Observable)*/
+        disposable.add(viewModel.transactions().subscribe(list -> {
+            transactionAdapter.submitList(list); //submitList - ListAdapter method -> Submits a new list to be diffed, and displayed (List<Transaction>)
+        }));
     }
 
     @Override
     public void onDestroyView() {
+
+        saveWalletPosition();
+
         walletsSnapHelper.attachToRecyclerView(null);
+
+        binding.recycler.removeOnScrollListener(carouselScroller);
+        binding.recycler.removeOnChildAttachStateChangeListener(carouselScroller);
+
+        /*when closing Fragment, it stays alive, only associated View is destroyed.
+        So we keep adapter alive on the Fragment lifecycle. - PROBABLY IT'S NOT TRUE WHEN FRAGMENTS CREATING WITH NAVIGATION -> THEY ARE CREATING EVERYTIME AGAIN*/
+        /*onDetachedFromRecyclerView called (logics there if necessary)*/
+        binding.recycler.swapAdapter(null, false); //else GC will not collect RV
+
+        /*Atomically clears the container, then disposes all the previously contained Disposables.*/
+        /*not .dispose() as this method will destroy CompositeDisposable -> should not happened onDestroyView*/
+        disposable.clear();  //unsubscribe all disposable objects in container
+
         super.onDestroyView();
     }
 
-    private static class CarouselScroller extends RecyclerView.OnScrollListener {
+    private void saveWalletPosition() {
+        /*find the center of the screen, instead of using DisplayMetrics*/
+        final int centerX = (binding.recycler.getLeft() + binding.recycler.getRight()) / 2;
+        /*iteration on Childs of current recycleView. Childs - only visible views (not all in the adapter)*/
+        for (int i = 0; i < binding.recycler.getChildCount(); i++) {
+            final View child = binding.recycler.getChildAt(i);
+
+            /*find the center of the Child*/
+            final int childCenterX = (child.getLeft() + child.getRight()) / 2;
+
+            /*normalized by walletCard width absolute offset of the Child X position*/
+            final float childOffset = (float) Math.abs(centerX - childCenterX) / (child.getWidth());
+
+            /*if childOffset <= 50% of the walletCard width -> set scale=1, else set scale = 0.9*/
+            if ((childOffset >= 0) && (childOffset <= 0.5f)) {
+                activeView = (String) LiWalletBinding.bind(child).symbol.getText();
+                return;
+            }
+        }
+    }
+
+    private static class CarouselScroller extends RecyclerView.OnScrollListener implements RecyclerView.OnChildAttachStateChangeListener {
+
+        private final String savedPosition;
+
+        public CarouselScroller(String savedPosition) {
+            this.savedPosition = savedPosition;
+        }
+
         @Override
         public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
             //           super.onScrolled(recyclerView, dx, dy);
@@ -127,5 +244,17 @@ public class WalletsFragment extends Fragment {
             }
         }
 
+        @Override
+        public void onChildViewAttachedToWindow(@NonNull View child) {
+            final float factor = (LiWalletBinding.bind(child).symbol.getText().equals(savedPosition)) ? 1 : 0.9f;
+            /*scaling with the factor*/
+            child.setScaleX(factor);
+            child.setScaleY(factor);
+        }
+
+        @Override
+        public void onChildViewDetachedFromWindow(@NonNull View view) {
+
+        }
     }
 }

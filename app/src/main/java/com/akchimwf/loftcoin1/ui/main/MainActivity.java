@@ -25,8 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private MainUIComponent component;
 
     /*Injection to a field, as constructor of activity is not accessible*/
-    @Inject
-    FragmentFactory fragmentFactory;   //can't be private
+    @Inject FragmentFactory fragmentFactory;   //can't be private
 
     /*Set the base context for this ContextWrapper. All calls will then be delegated to the base context. */
     /*Activity created and attached to App -> the best place to get AppComponent*/
@@ -76,6 +75,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         /*Navigate to current page to set correct Title at least*/
-        navController.navigate(navController.getCurrentDestination().getId());
+//        navController.navigate(navController.getCurrentDestination().getId());
     }
 }

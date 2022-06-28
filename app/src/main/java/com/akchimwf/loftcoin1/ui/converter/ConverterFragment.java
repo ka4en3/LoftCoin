@@ -8,15 +8,32 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.akchimwf.loftcoin1.BaseComponent;
 import com.akchimwf.loftcoin1.R;
 import com.akchimwf.loftcoin1.databinding.FragmentConverterBinding;
+import com.jakewharton.rxbinding3.view.RxView;
+import com.jakewharton.rxbinding3.widget.RxTextView;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.functions.Consumer;
+import kotlin.Unit;
+
+/*Share the same ViewModel with CoinsSheet.
+In this case choosing currency in one fragment replicates in another*/
 public class ConverterFragment extends Fragment {
+
+    private final CompositeDisposable disposable = new CompositeDisposable();
+
     /*FragmentConverterBinding class comes from 'viewBinding' at build.grade*/
     private FragmentConverterBinding binding;
 
@@ -39,7 +56,7 @@ public class ConverterFragment extends Fragment {
 
         /*Creates ViewModelProvider. This will create ViewModels and retain them in a store of the given ViewModelStoreOwner.*/
         /*get -> Returns an existing ViewModel or creates a new one in the scope (usually, a fragment or an activity), associated with this ViewModelProvider.*/
-        viewModel = new ViewModelProvider(this, component.viewModelFactory()).get(ConverterViewModel.class);
+        viewModel = new ViewModelProvider(requireParentFragment(), component.viewModelFactory()).get(ConverterViewModel.class);
     }
 
     @Nullable
@@ -50,12 +67,71 @@ public class ConverterFragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        /*FragmentConverterBinding class comes from 'viewBinding' at build.grade*/
+        /*don't inflate here, as we already inflated View in onCreateView. just bind View to FragmentRatesBinding*/
+        binding = FragmentConverterBinding.bind(view);
+
+        final NavController navController = NavHostFragment.findNavController(this);
+
+        /*Replace of onClick callback with Reactive*/
+        disposable.add(RxView.clicks(binding.fromCoin).subscribe(unit -> {
+            final Bundle args = new Bundle();
+            args.putInt(CoinsSheet.KEY_MODE, CoinsSheet.MODE_FROM);     //CoinsSheet will know from where was navigated
+            navController.navigate(R.id.coins_sheet, args);             //navigate with arguments to destination
+        }));
+        disposable.add(RxView.clicks(binding.toCoin).subscribe(unit -> {
+            final Bundle args = new Bundle();
+            args.putInt(CoinsSheet.KEY_MODE, CoinsSheet.MODE_TO);       //CoinsSheet will know from where was navigated
+            navController.navigate(R.id.coins_sheet, args);             //navigate with arguments to destination
+        }));
+
+        /*to show default coins in converter (.doOnNext((coins) -> fromCoin.onNext(coins.get(0))) in ViewModel)*/
+        disposable.add(viewModel.topCoins().subscribe());
+        disposable.add(viewModel.fromCoin().subscribe(coin -> {
+            binding.fromCoin.setText(coin.symbol());
+        }));
+        disposable.add(viewModel.toCoin().subscribe(coin -> {
+            binding.toCoin.setText(coin.symbol());
+        }));
+
+        /*Reactive to set calculated values to fields of calculator*/
+        disposable.add(viewModel.fromValue()
+
+                /*is necessary, means if value of field didn't changed -> no action. In other case infinite loop here: get value->set value->...*/
+                .distinctUntilChanged()
+
+                .subscribe(text -> {
+                    binding.from.setText(text);
+                    binding.from.setSelection(text.length()); //to move cursor with typing
+                }));
+        disposable.add(viewModel.toValue()
+
+                /*is necessary, means if value of field didn't changed -> no action. In other case infinite loop here: set value->place value->...*/
+                .distinctUntilChanged()
+
+                .subscribe(text -> {
+                    binding.to.setText(text);
+                    binding.to.setSelection(text.length());   //to move cursor with typing
+                }));
+
+        /*Reactive to get values from fields of calculator*/
+        disposable.add(RxTextView.textChanges(binding.from)
+                .skipInitialValue()  //TODO in other case infinity loop when RETURN to ConverterFragment
+                .subscribe(text -> viewModel.fromValue(text)));
+        disposable.add(RxTextView.textChanges(binding.to).subscribe(viewModel::toValue));
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
     }
 
     @Override
     public void onDestroyView() {
+        disposable.clear();
         super.onDestroyView();
     }
 }

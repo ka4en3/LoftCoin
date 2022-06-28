@@ -13,5 +13,5 @@ abstract class RatesModule {
     @Binds
     @IntoMap
     @ClassKey(RatesViewModel.class)
-    abstract ViewModel viewModel(RatesViewModel impl);
+    abstract ViewModel ratesViewModel(RatesViewModel impl);
 }

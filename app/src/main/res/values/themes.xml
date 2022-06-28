@@ -31,6 +31,7 @@
         <item name="toolbarStyle">@style/Theme.LoftCoin.ToolBarOverlay</item>
 
         <item name="materialAlertDialogTheme">@style/Theme.LoftCoin.AlertDialog</item>
+        <item name="bottomSheetDialogTheme">@style/Theme.LoftCoin.BottomSheetDialog</item>
         <item name="bottomNavigationStyle">@style/Theme.LoftCoin.BottomNavigationView</item>
 
         <item name="percentNegative">@color/watermelon</item>

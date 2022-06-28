@@ -23,10 +23,16 @@
         android:label="@string/converter"
         tools:layout="@layout/fragment_converter" />
 
-    <!--id/currency_dialog should be equal to rates.xml view-->
+    <!--id/coins_sheet should be equal to res/menu/rates.xml-->
     <dialog
         android:id="@+id/currency_dialog"
         android:name="com.akchimwf.loftcoin1.ui.currency.CurrencyDialog"
-        android:label="CurrencyDialog"
+        android:label="@string/choose_currency"
+        tools:layout="@layout/dialog_currency" />
+
+    <dialog
+        android:id="@+id/coins_sheet"
+        android:name="com.akchimwf.loftcoin1.ui.converter.CoinsSheet"
+        android:label="@string/choose_currency"
         tools:layout="@layout/dialog_currency" />
 </navigation>

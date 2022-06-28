@@ -4,23 +4,32 @@ import android.content.Context;
 
 import com.akchimwf.loftcoin1.data.CoinsRepo;
 import com.akchimwf.loftcoin1.data.CurrencyRepo;
+import com.akchimwf.loftcoin1.data.WalletsRepo;
 import com.akchimwf.loftcoin1.util.ImageLoader;
+import com.akchimwf.loftcoin1.util.Notifier;
 import com.akchimwf.loftcoin1.util.RxSchedulers;
 
 /*is needed to use in dependencies in MainUIComponent, as using scoped components (like AppComponent) directly not allowed by Dagger */
+/*all listed here classes will be available from every Component has BaseComponent as dependency*/
 public interface BaseComponent {
-    /*when AppComponent needs Context, it will be taken from AppModule*/
+    /*will be taken from AppModule*/
     Context context();
 
-    /*when AppComponent needs CoinsRepo, it will be taken from DataModule*/
+    /*will be taken from DataModule*/
     CoinsRepo coinsRepo();
 
-    /*when AppComponent needs CurrencyRepo, it will be taken from DataModule*/
+    /*will be taken from DataModule*/
     CurrencyRepo currencyRepo();
 
-    /*when AppComponent needs ImageLoader, it will be taken from UtilModule*/
+    /*will be taken from DataModule*/
+    WalletsRepo walletsRepo();
+
+    /*will be taken from UtilModule*/
     ImageLoader imageLoader();
 
-    /*when AppComponent needs ImageLoader, it will be taken from UtilModule*/
+    /*will be taken from UtilModule*/
     RxSchedulers schedulers();
+
+    /*will be taken from UtilModule*/
+    Notifier notifier();
 }

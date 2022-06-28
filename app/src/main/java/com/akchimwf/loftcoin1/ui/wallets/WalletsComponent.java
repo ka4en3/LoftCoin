@@ -21,4 +21,10 @@ import dagger.Component;
 public abstract class WalletsComponent {
     /*to call this method as component.viewModelFactory()*/
     abstract ViewModelProvider.Factory viewModelFactory();
+
+    /*to call this method as component.walletsAdapter();*/
+    abstract WalletsAdapter walletsAdapter();
+
+    /*to call this method as component.transactionsAdapter();*/
+    abstract TransactionsAdapter transactionsAdapter();
 }

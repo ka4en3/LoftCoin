@@ -7,11 +7,24 @@ import com.google.auto.value.AutoValue;
 import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.Single;
 
 /*interface for Repository according to and Clean Architecture*/
 public interface CoinsRepo {
+
     @NonNull
     Observable<List<Coin>> listings(@NonNull Query query);
+
+    /*The Single class implements the Reactive Pattern for a single value response.
+    Single behaves similarly to Observable except that it can only emit either a single successful value or an error
+    (there is no "onComplete" notification as there is for an Observable)*/
+    @NonNull
+    Single<Coin> coin(Currency currency, long id);
+
+    /*get top 3 coins for coins_sheet dialog*/
+    @NonNull
+    Observable<List<Coin>> topCoins(@NonNull Currency currency);
 
     /*Inner class contained Query for LiveData<List<Coin>> listings(), can easy modify without modify of method listings()*/
     @AutoValue
@@ -22,7 +35,8 @@ public interface CoinsRepo {
         @NonNull
         public static Builder builder() {
             return new AutoValue_CoinsRepo_Query.Builder()
-                    .forceUpdate(true); //default value
+                    .forceUpdate(true)       //default value
+                    .sortBy(SortBy.RANK);    //default value
         }
 
         abstract String currency();
