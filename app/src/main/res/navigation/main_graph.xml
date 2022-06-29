@@ -7,26 +7,32 @@
 
     <fragment
         android:id="@+id/wallets"
-        android:name="com.akchimwf.loftcoin.ui.wallets.WalletsFragment"
+        android:name="com.akchimwf.loftcoin1.ui.wallets.WalletsFragment"
         android:label="@string/wallets"
         tools:layout="@layout/fragment_wallets" />
 
     <fragment
         android:id="@+id/rates"
-        android:name="com.akchimwf.loftcoin.ui.rates.RatesFragment"
+        android:name="com.akchimwf.loftcoin1.ui.rates.RatesFragment"
         android:label="@string/rates"
         tools:layout="@layout/fragment_rates" />
 
     <fragment
         android:id="@+id/converter"
-        android:name="com.akchimwf.loftcoin.ui.converter.ConverterFragment"
+        android:name="com.akchimwf.loftcoin1.ui.converter.ConverterFragment"
         android:label="@string/converter"
         tools:layout="@layout/fragment_converter" />
 
-    <!--id/currency_dialog should be equal to rates.xml view-->
+    <!--id/coins_sheet should be equal to res/menu/rates.xml-->
     <dialog
         android:id="@+id/currency_dialog"
-        android:name="com.akchimwf.loftcoin.ui.currency.CurrencyDialog"
-        android:label="CurrencyDialog"
+        android:name="com.akchimwf.loftcoin1.ui.currency.CurrencyDialog"
+        android:label="@string/choose_currency"
+        tools:layout="@layout/dialog_currency" />
+
+    <dialog
+        android:id="@+id/coins_sheet"
+        android:name="com.akchimwf.loftcoin1.ui.converter.CoinsSheet"
+        android:label="@string/choose_currency"
         tools:layout="@layout/dialog_currency" />
 </navigation>

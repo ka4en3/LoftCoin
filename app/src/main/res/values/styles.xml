@@ -15,6 +15,10 @@
         <item name="colorSurface">@color/dark_four</item>
     </style>
 
+    <style name="Theme.LoftCoin.BottomSheetDialog" parent="ThemeOverlay.MaterialComponents.BottomSheetDialog">
+        <item name="colorSurface">@color/dark_four</item>
+    </style>
+
     <style name="Theme.LoftCoin.ToolBarOverlay" parent="Widget.AppCompat.Toolbar">
         <item name="android:background">?attr/colorPrimary</item>
     </style>

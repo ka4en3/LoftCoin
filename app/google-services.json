@@ -1,0 +1,76 @@
+{
+  "project_info": {
+    "project_number": "756396611815",
+    "project_id": "loftcoin-f8caa",
+    "storage_bucket": "loftcoin-f8caa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:756396611815:android:e2e86b901d10357d6f6a42",
+        "android_client_info": {
+          "package_name": "com.akchimwf.loftcoin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "756396611815-graeu0a44vlk4htaqtsqk0trr5rf3lla.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_01mdVufSldkLm3cqB9gvx-R0mMGt7_0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "756396611815-graeu0a44vlk4htaqtsqk0trr5rf3lla.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:756396611815:android:6791138cca8fba7b6f6a42",
+        "android_client_info": {
+          "package_name": "com.akchimwf.loftcoin1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "756396611815-773abulqqoc3tfjcrg1h0ttt9havnrnv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.akchimwf.loftcoin1",
+            "certificate_hash": "358713fc96b0a7305d9a1c737d8aa2009e420fef"
+          }
+        },
+        {
+          "client_id": "756396611815-graeu0a44vlk4htaqtsqk0trr5rf3lla.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_01mdVufSldkLm3cqB9gvx-R0mMGt7_0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "756396611815-graeu0a44vlk4htaqtsqk0trr5rf3lla.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
