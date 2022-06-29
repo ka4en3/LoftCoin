@@ -30,7 +30,7 @@ public class LoftApp extends Application {
                 .build();
 
         /*get FCM token - to send messages from Firebase -> CloudMessaging (manually coping from logcat to CloudMessaging interface)*/
-        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> Timber.d("fcm: %s", token));
+        //FirebaseMessaging.getInstance().getToken().addOnSuccessListener(token -> Timber.d("fcm: %s", token));
     }
 
     public BaseComponent getComponent() {

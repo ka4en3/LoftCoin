@@ -1,4 +1,4 @@
-package com.akchimwf.loftcoin1.splash;
+package com.akchimwf.loftcoin1.ui.splash;
 
 import android.content.Intent;
 
@@ -26,9 +26,9 @@ public class SplashActivity extends AppCompatActivity {
 
     private SharedPreferences prefs;
 
-    /*only for testing -> must be visible in test -> not private final*/
+    /*only for testing -> must be visible in androidTest -> package private*/
     @VisibleForTesting
-    public SplashIdling idling = new NoopIdling();
+    SplashIdling idling = new NoopIdling();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

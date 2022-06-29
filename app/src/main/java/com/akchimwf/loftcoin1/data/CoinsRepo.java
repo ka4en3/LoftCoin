@@ -41,7 +41,7 @@ public interface CoinsRepo {
 
         abstract String currency();
 
-        abstract Boolean forceUpdate();   //reload data from server or not
+        public abstract Boolean forceUpdate();   //reload com.akchimwf.loftcoin1.data from server or not
 
         abstract SortBy sortBy();
 

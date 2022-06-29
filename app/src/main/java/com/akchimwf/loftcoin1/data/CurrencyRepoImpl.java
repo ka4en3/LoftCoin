@@ -24,8 +24,9 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Cancellable;
 
 @Singleton
-        /*Not public as use Dagger and DI*/
-class CurrencyRepoImpl implements CurrencyRepo {
+/*Not public as use Dagger and DI*/
+/*public - for testing needs*/
+public class CurrencyRepoImpl implements CurrencyRepo {
 
     private static final String KEY_CURRENCY = "currency";
 
@@ -36,7 +37,7 @@ class CurrencyRepoImpl implements CurrencyRepo {
     /*Context as input as we need localization from Resources*/
     /*Not public as use Dagger and DI*/
     @Inject
-    CurrencyRepoImpl(@NonNull Context context) {
+    public CurrencyRepoImpl(@NonNull Context context) {
         this.prefs = PreferenceManager.getDefaultSharedPreferences(context);
         /*fill HashMap with currencies in constructor*/
         /*currency.code == key*/
@@ -45,7 +46,7 @@ class CurrencyRepoImpl implements CurrencyRepo {
         availableCurrencies.put("RUB", Currency.create("₽", "RUB", context.getString(R.string.rub)));
     }
 
-    /*get available currencies as a live data*/
+    /*get available currencies as a live com.akchimwf.loftcoin1.data*/
     @NonNull
     @Override
     public LiveData<List<Currency>> availableCurrencies() {
@@ -68,7 +69,7 @@ class CurrencyRepoImpl implements CurrencyRepo {
                 SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
                     @Override
                     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                        if (!emitter.isDisposed()) {  //if emitter is still active
+                        if (!emitter.isDisposed() && KEY_CURRENCY.equals(key)) {  //if emitter is still active and right key has come (KEY_CURRENCY, not KEY_SHOW_WELCOME from SplashActivity)
                             emitter.onNext(availableCurrencies.get(prefs.getString(key, "USD")));
                         }
                     }
@@ -85,7 +86,7 @@ class CurrencyRepoImpl implements CurrencyRepo {
                     }
                 });
 
-                /*default data pushed to emitter*/
+                /*default com.akchimwf.loftcoin1.data pushed to emitter*/
                 emitter.onNext(availableCurrencies.get(prefs.getString(KEY_CURRENCY, "USD")));
             }
         });

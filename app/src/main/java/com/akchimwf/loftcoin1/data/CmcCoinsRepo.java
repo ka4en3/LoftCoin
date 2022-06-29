@@ -98,7 +98,7 @@ class CmcCoinsRepo implements CoinsRepo {
                     coin.rank(),
                     coin.price(),
                     coin.change24h(),
-                    query.currency(),  //get currency directly from query, some excess data for save in DB, but easier to handle further with currency viewing
+                    query.currency(),  //get currency directly from query, some excess com.akchimwf.loftcoin1.data for save in DB, but easier to handle further with currency viewing
                     coin.id()
             ));
         }

@@ -1,4 +1,4 @@
-package com.akchimwf.loftcoin1.splash;
+package com.akchimwf.loftcoin1.ui.splash;
 
 /*Only for purposes of testing*/
 public interface SplashIdling {

@@ -5,19 +5,16 @@ import androidx.lifecycle.ViewModel;
 
 import com.akchimwf.loftcoin1.data.Coin;
 import com.akchimwf.loftcoin1.data.CoinsRepo;
-import com.akchimwf.loftcoin1.data.Currency;
 import com.akchimwf.loftcoin1.data.CurrencyRepo;
 import com.akchimwf.loftcoin1.util.RxSchedulers;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.Subject;
 
@@ -50,7 +47,7 @@ class ConverterViewModel extends ViewModel {
                 .switchMap(currency -> coinsRepo.topCoins(currency))
                 .doOnNext(coins -> {
                     if (firstRun) fromCoin.onNext(coins.get(0));  //default value  //TODO set top 3 coins not hardcoded
-                    if (firstRun) toCoin.onNext(coins.get(1));
+                    if (firstRun) toCoin.onNext(coins.get(2));
                     firstRun = false;
                 })
 

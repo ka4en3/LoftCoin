@@ -100,7 +100,7 @@ class RatesViewModel extends ViewModel {
                 /*Atomically sets to the given value and returns the previous value*/
                 /*we need it here as don't need to get data from server(need to get from db) when sorting -> set forceUpdate to false*/
                 /*first run forceUpdate==true, but second run if only sorting was called forceUpdate==false*/
-                .map(builder -> builder.forceUpdate(forceUpdate.getAndSet(false)))  //map as forceUpdate is not a stream, so transform one result ot another
+                .map(builder -> builder.forceUpdate(forceUpdate.getAndSet(false)))  //map as forceUpdate is not a stream, so transform one result to another
 
                 .map(builder -> builder.build())                    //finally build query
 
@@ -118,7 +118,7 @@ class RatesViewModel extends ViewModel {
         ;
     }
 
-    /*push data outside ViewModel*/
+    /*push com.akchimwf.loftcoin1.data outside ViewModel*/
     @NonNull
     Observable<List<Coin>> coins() {
         /* coinsRepo.listings executing on the IO thread, but we need to observe data on main thread*/

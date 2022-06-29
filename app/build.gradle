@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId "com.akchimwf.loftcoin"
         minSdk 21
-        targetSdk 29
+        targetSdk 32
         versionCode 1
         versionName "1.0"
 
@@ -39,12 +39,12 @@ android {
         testBuildType "debug"
     }
 
-    /*if needed to run Activities test in unitTest, means use manifest for tests*/
-/*    testOptions {
+    /*use f.e. R and manifest in unit tests (for robolectric?)*/
+    testOptions {
         unitTests {
             includeAndroidResources = true
         }
-    }*/
+    }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8

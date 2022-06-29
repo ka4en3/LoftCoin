@@ -30,7 +30,7 @@ import javax.inject.Inject;
 
 /*NO ANY LOGICS(f.e. formatting values) IN ADAPTER! ONLY BINDING VIEWS*/
 
-/*RecyclerView.Adapter base class for presenting List data in a RecyclerView,
+/*RecyclerView.Adapter base class for presenting List com.akchimwf.loftcoin1.data in a RecyclerView,
 including computing diffs between Lists on a background thread*/
 /*This class is a convenience wrapper around AsyncListDiffer that implements Adapter common default behavior for item access and counting*/
 /*Type parameters:
@@ -131,7 +131,7 @@ class RatesAdapter extends ListAdapter<Coin, RatesAdapter.ViewHolder> {
             holder.binding.getRoot().setBackgroundColor(holder.binding.getRoot().getContext().getColor(R.color.dark_six));
     }
 
-    /*called when payloads present(means data(price, change24) from server changed),
+    /*called when payloads present(means com.akchimwf.loftcoin1.data(price, change24) from server changed),
     so number of times as how many coins were changed*/
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -171,7 +171,7 @@ class RatesAdapter extends ListAdapter<Coin, RatesAdapter.ViewHolder> {
         final Context context = recyclerView.getContext();
         inflater = LayoutInflater.from(context);
 
-        /*Container for a dynamically typed data value. Primarily used with android.content.res.Resources for holding resource values.*/
+        /*Container for a dynamically typed com.akchimwf.loftcoin1.data value. Primarily used with android.content.res.Resources for holding resource values.*/
         final TypedValue typedValue = new TypedValue();
         /*Retrieve the value of an attribute in the Theme. resolveRefs means Style can be referenced to another Style*/
         context.getTheme().resolveAttribute(R.attr.percentNegative, typedValue, true);
