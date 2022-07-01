@@ -67,7 +67,7 @@ public class CurrencyDialog extends AppCompatDialogFragment {
         binding.recycler.setAdapter(adapter);
 
         /*Adds the given observer to the observers list within the lifespan of the given owner.
-        The events are dispatched on the main thread. If LiveData already has data set, it will be delivered to the observer.*/
+        The events are dispatched on the main thread. If LiveData already has com.akchimwf.loftcoin1.data set, it will be delivered to the observer.*/
         viewModel.availableCurrencies().observe(this, new Observer<List<Currency>>() {
             @Override
             public void onChanged(List<Currency> list) {

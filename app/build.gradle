@@ -26,10 +26,26 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            minifyEnabled false
+            debuggable true
+        }
     }
+
+    android {
+        testBuildType "debug"
+    }
+
+    /*use f.e. R and manifest in unit tests (for robolectric?)*/
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -80,10 +96,6 @@ dependencies {
     implementation 'com.google.dagger:dagger:2.36'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.36'
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-
     //Room
     def room_version = "2.3.0"
     implementation "androidx.room:room-runtime:2.4.2"
@@ -102,4 +114,22 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:30.2.0')
     implementation 'com.google.firebase:firebase-firestore'   //firestore
     implementation 'com.google.firebase:firebase-messaging'   //notifications
+
+    //Test
+    testImplementation "junit:junit:4.13.2"                   //main framework for testing in java
+    testImplementation "com.google.truth:truth:1.0.1"         //library for values validation
+    testImplementation "androidx.test:core:1.4.0"
+    testImplementation "androidx.test.ext:junit:1.1.3"        //extension to run on android
+    testImplementation "androidx.test.ext:truth:1.4.0"        //extension to run on android
+    testImplementation "org.robolectric:robolectric:4.3.1"    //framework to run test on PC, not on device
+
+    androidTestImplementation "junit:junit:4.13.2"
+    androidTestImplementation "com.google.truth:truth:1.0.1"
+    androidTestImplementation "androidx.test:core:1.4.0"
+    androidTestImplementation "androidx.test.ext:junit:1.1.3"
+    androidTestImplementation "androidx.test.ext:truth:1.4.0"
+    //framework for UI testing
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
+    androidTestImplementation "androidx.test.espresso:espresso-intents:3.4.0"
+    androidTestImplementation "androidx.test.espresso:espresso-idling-resource:3.4.0"
 }
